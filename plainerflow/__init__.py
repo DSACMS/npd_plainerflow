@@ -2,6 +2,25 @@
 plainerflow - A Python package for plain flow operations
 """
 
+import warnings
+
+# Suppress Marshmallow warnings before importing InLaw (which imports Great Expectations)
+# These are version compatibility issues between Great Expectations and Marshmallow
+# that will be resolved in future GX releases
+try:
+    from marshmallow.warnings import ChangedInMarshmallow4Warning
+    warnings.filterwarnings(
+        "ignore",
+        message=r".*Number.*field should not be instantiated.*Use.*Integer.*Float.*or.*Decimal.*instead.*",
+        category=ChangedInMarshmallow4Warning
+    )
+except ImportError:
+    # Fallback if marshmallow warnings module structure changes
+    warnings.filterwarnings(
+        "ignore",
+        message=r".*Number.*field should not be instantiated.*Use.*Integer.*Float.*or.*Decimal.*instead.*"
+    )
+
 __version__ = "0.1.0"
 __author__ = "Fred Trotter"
 __email__ = "fred.trotter@gmail.com"

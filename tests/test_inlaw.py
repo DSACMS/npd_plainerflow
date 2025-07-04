@@ -13,9 +13,18 @@ class TestInLawBasicPass(InLaw):
     
     @staticmethod
     def run(engine):
+        import warnings
         sql = "SELECT 1 as test_value"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
-        result = gdf.expect_column_values_to_be_between(column="test_value", min_value=0, max_value=2)
+        test_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
+        
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+                category=UserWarning
+            )
+            result = test_gx_df.expect_column_values_to_be_between(column="test_value", min_value=0, max_value=2)
+        
         return True if result.success else "Test value was not between 0 and 2"
 
 
@@ -25,9 +34,18 @@ class TestInLawBasicFail(InLaw):
     
     @staticmethod
     def run(engine):
+        import warnings
         sql = "SELECT 1 as test_value"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
-        result = gdf.expect_column_values_to_be_between(column="test_value", min_value=5, max_value=10)
+        test_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
+        
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+                category=UserWarning
+            )
+            result = test_gx_df.expect_column_values_to_be_between(column="test_value", min_value=5, max_value=10)
+        
         return True if result.success else "Test value was not between 5 and 10"
 
 
@@ -39,22 +57,31 @@ class TestInLawWithError(InLaw):
     def run(engine):
         # This will cause an error due to invalid SQL
         sql = "SELECT FROM invalid_syntax"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        error_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         return True
 
 
-def test_inlaw_to_gx_dataframe():
-    """Test the to_gx_dataframe static method."""
+def test_inlaw_sql_to_gx_df():
+    """Test the sql_to_gx_df static method."""
+    import warnings
+    
     engine = sqlalchemy.create_engine("sqlite:///:memory:")
     
     sql = "SELECT 1 as test_col, 'hello' as text_col"
-    validator = InLaw.to_gx_dataframe(sql, engine)
+    validator_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
     
     # Verify we got a Great Expectations validator
-    assert hasattr(validator, 'expect_column_values_to_be_between')
+    assert hasattr(validator_gx_df, 'expect_column_values_to_be_between')
     
-    # Test that we can run an expectation
-    result = validator.expect_column_values_to_be_between(column="test_col", min_value=0, max_value=2)
+    # Test that we can run an expectation - suppress only the specific result_format warning
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+            category=UserWarning
+        )
+        result = validator_gx_df.expect_column_values_to_be_between(column="test_col", min_value=0, max_value=2)
+    
     assert result.success
 
 
@@ -74,7 +101,7 @@ def test_inlaw_run_all():
     engine = sqlalchemy.create_engine("sqlite:///:memory:")
     
     # Run all InLaw tests (includes our test classes defined above)
-    results = InLaw.run_all(engine)
+    results = InLaw.run_all(engine=engine)
     
     # Verify results structure
     assert isinstance(results, dict)
@@ -104,7 +131,7 @@ def test_inlaw_invalid_return_type():
             return 42  # Invalid return type (should be bool or str)
     
     engine = sqlalchemy.create_engine("sqlite:///:memory:")
-    results = InLaw.run_all(engine)
+    results = InLaw.run_all(engine=engine)
     
     # Should have at least one error due to invalid return type
     assert results['errors'] >= 1
@@ -123,13 +150,13 @@ if __name__ == "__main__":
     print("Testing InLaw implementation...")
     
     # Test basic functionality
-    test_inlaw_to_gx_dataframe()
+    test_inlaw_sql_to_gx_df()
     test_inlaw_ansi_colors()
     print("✅ Basic tests passed")
     
     # Test run_all functionality
     print("\nRunning InLaw.run_all() test:")
-    results = InLaw.run_all(engine)
+    results = InLaw.run_all(engine=engine)
     print(f"Results: {results}")
     
     print("\n✅ All tests completed successfully!")

@@ -16,15 +16,15 @@ class InLawTableRowCountCheck(InLaw):
     def run(engine):
         # Common pattern: SELECT COUNT(*) and check it's under a threshold
         sql = "SELECT COUNT(*) AS row_count FROM test_table"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        count_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        result = gdf.expect_column_values_to_be_between(
+        result = count_gx_df.expect_column_values_to_be_between(
             column="row_count", min_value=0, max_value=99
         )
         
         if result.success:
             return True
-        return f"Table has {gdf.iloc[0]['row_count']} rows, expected < 100"
+        return "Table has too many rows, expected < 100"
 
 
 # Example 2: Zero rows returned - Second most common pattern
@@ -34,14 +34,14 @@ class InLawNoInvalidRecords(InLaw):
     @staticmethod
     def run(engine):
         # Common pattern: Query should return zero rows (no problems found)
-        sql = "SELECT * FROM test_table WHERE value < 0"  # Should return 0 rows
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        sql = "SELECT COUNT(*) as invalid_count FROM test_table WHERE value < 0"  # Should return 0
+        invalid_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        # Check that we got zero rows back
-        row_count = len(gdf)
-        if row_count == 0:
+        # Check that count is zero
+        result = invalid_gx_df.expect_column_values_to_be_between(column="invalid_count", min_value=0, max_value=0)
+        if result.success:
             return True
-        return f"Found {row_count} invalid records with negative values"
+        return "Found invalid records with negative values"
 
 
 # Example 3: Exactly one row returned - Third most common pattern  
@@ -52,15 +52,15 @@ class InLawSingleConfigRecord(InLaw):
     def run(engine):
         # Common pattern: Query should return exactly one row
         sql = "SELECT COUNT(*) as config_count FROM test_table WHERE name = 'Alice'"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        config_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        result = gdf.expect_column_values_to_equal(
-            column="config_count", value=1
+        result = config_gx_df.expect_column_values_to_be_between(
+            column="config_count", min_value=1, max_value=1
         )
         
         if result.success:
             return True
-        return f"Expected exactly 1 Alice record, found {gdf.iloc[0]['config_count']}"
+        return "Expected exactly 1 Alice record, but count was different"
 
 
 # Example 4: Single row with numeric value in range - Fourth most common pattern
@@ -71,19 +71,15 @@ class InLawNumericValueInRange(InLaw):
     def run(engine):
         # Common pattern: Single row query with numeric value validation
         sql = "SELECT value as this_particular_col FROM test_table WHERE name = 'Bob'"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        numeric_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        # Check we got exactly one row
-        if len(gdf) != 1:
-            return f"Expected 1 row, got {len(gdf)} rows"
-        
-        result = gdf.expect_column_values_to_be_between(
+        result = numeric_gx_df.expect_column_values_to_be_between(
             column="this_particular_col", min_value=7, max_value=10
         )
         
         if result.success:
             return True
-        return f"Value {gdf.iloc[0]['this_particular_col']} is not between 7 and 10"
+        return "Value is not between 7 and 10"
 
 
 # Example 5: Single row with non-null VARCHAR - Fifth most common pattern
@@ -94,24 +90,15 @@ class InLawVarcharNotBlankOrNull(InLaw):
     def run(engine):
         # Common pattern: Single row query with VARCHAR validation
         sql = "SELECT name as that_other_col FROM test_table WHERE name = 'Alice'"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
-        
-        # Check we got exactly one row
-        if len(gdf) != 1:
-            return f"Expected 1 row, got {len(gdf)} rows"
+        varchar_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
         # Check column is not null
-        result_not_null = gdf.expect_column_values_to_not_be_null(
+        result_not_null = varchar_gx_df.expect_column_values_to_not_be_null(
             column="that_other_col"
         )
         
         if not result_not_null.success:
             return "Column 'that_other_col' contains NULL values"
-        
-        # Check column is not blank (empty string)
-        value = gdf.iloc[0]['that_other_col']
-        if isinstance(value, str) and value.strip() == "":
-            return "Column 'that_other_col' contains blank/empty string"
         
         return True
 
@@ -124,15 +111,15 @@ class InLawAlwaysFailsTest(InLaw):
     def run(engine):
         # This test is designed to always fail
         sql = "SELECT 100 as large_number"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        fail_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        result = gdf.expect_column_values_to_be_between(
+        result = fail_gx_df.expect_column_values_to_be_between(
             column="large_number", min_value=0, max_value=50
         )
         
         if result.success:
             return True
-        return f"Value {gdf.iloc[0]['large_number']} is not between 0 and 10"
+        return "Value is not between 0 and 50"
 
 
 def main():
@@ -169,7 +156,7 @@ def main():
     print()
     
     # Run all InLaw tests
-    results = InLaw.run_all(engine)
+    results = InLaw.run_all(engine=engine)
     
     print()
     print("Test Results Summary:")

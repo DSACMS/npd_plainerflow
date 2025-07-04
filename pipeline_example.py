@@ -165,10 +165,10 @@ def main():
                 (SELECT COUNT(*) FROM {customers_DBTable}) as customer_count,
                 (SELECT COUNT(*) FROM {customer_summary_DBTable}) as summary_count
             """
-            gdf = InLaw.to_gx_dataframe(sql, engine)
+            validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
             
-            customer_count = gdf.iloc[0]['customer_count']
-            summary_count = gdf.iloc[0]['summary_count']
+            customer_count = validation_gx_df.iloc[0]['customer_count']
+            summary_count = validation_gx_df.iloc[0]['summary_count']
             
             if customer_count == summary_count:
                 return True
@@ -180,9 +180,9 @@ def main():
         @staticmethod
         def run(engine):
             sql = f"SELECT COUNT(*) as null_count FROM {customer_summary_DBTable} WHERE full_name IS NULL"
-            gdf = InLaw.to_gx_dataframe(sql, engine)
+            validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
             
-            null_count = gdf.iloc[0]['null_count']
+            null_count = validation_gx_df.iloc[0]['null_count']
             
             if null_count == 0:
                 return True
@@ -198,9 +198,9 @@ def main():
             FROM {customer_summary_DBTable} 
             WHERE total_orders > 0 AND total_spent <= 0
             """
-            gdf = InLaw.to_gx_dataframe(sql, engine)
+            validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
             
-            invalid_count = gdf.iloc[0]['invalid_count']
+            invalid_count = validation_gx_df.iloc[0]['invalid_count']
             
             if invalid_count == 0:
                 return True
@@ -208,7 +208,7 @@ def main():
     
     # Step 7: Run validation tests using InLaw
     print("\nStep 7: Running data validation tests...")
-    test_results = InLaw.run_all(engine)
+    test_results = InLaw.run_all(engine=engine)
     
     # Final summary
     print("\n" + "=" * 50)

@@ -6,8 +6,11 @@ Single-file child classes with zero GX boilerplate.
 """
 
 import sys
+import os
+import importlib.util
+import warnings
 from abc import ABC, abstractmethod
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Any, Optional
 import sqlalchemy
 import pandas as pd
 
@@ -17,6 +20,34 @@ except ImportError:
     raise ImportError(
         "Great Expectations is required for InLaw. Install with: pip install great-expectations"
     )
+
+# Suppress Great Expectations checkpoint warnings since InLaw replaces checkpoints
+warnings.filterwarnings(
+    "ignore",
+    message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+    category=UserWarning,
+    module="great_expectations.expectations.expectation"
+)
+
+
+class _SuppressGXWarnings:
+    """Context manager to suppress Great Expectations checkpoint warnings."""
+    
+    def __enter__(self):
+        warnings.filterwarnings(
+            "ignore",
+            message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+            category=UserWarning
+        )
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Reset warnings to default behavior for this specific warning
+        warnings.filterwarnings(
+            "default",
+            message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+            category=UserWarning
+        )
 
 
 class InLaw(ABC):
@@ -45,8 +76,9 @@ class InLaw(ABC):
         """
         pass
     
+        
     @staticmethod
-    def to_gx_dataframe(sql: str, engine):
+    def sql_to_gx_df(*, sql: str, engine):
         """
         Convert SQL query result to Great Expectations DataFrame.
         
@@ -62,17 +94,40 @@ class InLaw(ABC):
             with engine.connect() as conn:
                 pandas_df = pd.read_sql_query(sqlalchemy.text(sql), conn)
             
-            # Convert to Great Expectations DataFrame using the correct API
-            context = gx.get_context()
-            datasource = context.sources.add_pandas("pandas_datasource")
-            data_asset = datasource.add_dataframe_asset("dataframe_asset")
-            batch_request = data_asset.build_batch_request(dataframe=pandas_df)
-            validator = context.get_validator(batch_request=batch_request)
+            # Suppress only the specific result_format warning during GX operations
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+                    category=UserWarning
+                )
+                
+                # Convert to Great Expectations DataFrame using the correct API
+                context = gx.get_context()
+                datasource = context.sources.add_pandas("pandas_datasource")
+                data_asset = datasource.add_dataframe_asset("dataframe_asset")
+                batch_request = data_asset.build_batch_request(dataframe=pandas_df)
+                gx_df = context.get_validator(batch_request=batch_request)
             
-            return validator
+            return gx_df
             
         except Exception as e:
             raise RuntimeError(f"Failed to execute SQL and create GX DataFrame: {e}")
+    
+    @staticmethod
+    def to_gx_dataframe(sql: str, engine):
+        """
+        Legacy method name - use sql_to_gx_df instead.
+        Convert SQL query result to Great Expectations DataFrame.
+        
+        Args:
+            sql: SQL query string
+            engine: SQLAlchemy engine
+            
+        Returns:
+            Great Expectations DataFrame
+        """
+        return InLaw.sql_to_gx_df(sql=sql, engine=engine)
     
     @staticmethod
     def ansi_green(text: str) -> str:
@@ -83,21 +138,77 @@ class InLaw(ABC):
     def ansi_red(text: str) -> str:
         """Return text with ANSI red color codes."""
         return f"\033[91m{text}\033[0m"
+
+    @staticmethod
+    def _import_file(*, file_path: str) -> None:
+        """
+        Import a Python file to discover InLaw subclasses.
+        
+        Args:
+            file_path: Path to the Python file to import
+        """
+        try:
+            # Get absolute path
+            abs_path = os.path.abspath(file_path)
+            
+            # Create module name from file path
+            module_name = os.path.splitext(os.path.basename(abs_path))[0]
+            
+            # Load the module
+            spec = importlib.util.spec_from_file_location(module_name, abs_path)
+            if spec and spec.loader:
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                
+        except Exception as e:
+            print(f"Warning: Failed to import {file_path}: {e}")
     
     @staticmethod
-    def run_all(engine) -> Dict[str, Any]:
+    def _import_directory(*, directory_path: str) -> None:
+        """
+        Import all Python files in a directory to discover InLaw subclasses.
+        
+        Args:
+            directory_path: Path to the directory containing Python files
+        """
+        try:
+            if not os.path.isdir(directory_path):
+                print(f"Warning: Directory {directory_path} does not exist")
+                return
+                
+            for filename in os.listdir(directory_path):
+                if filename.endswith('.py') and not filename.startswith('__'):
+                    file_path = os.path.join(directory_path, filename)
+                    InLaw._import_file(file_path=file_path)
+                    
+        except Exception as e:
+            print(f"Warning: Failed to import from directory {directory_path}: {e}")
+
+    @staticmethod
+    def run_all(*, engine, inlaw_files: Optional[List[str]] = None, inlaw_dir: Optional[str] = None) -> Dict[str, Any]:
         """
         Discover and run all InLaw subclasses.
         
         Args:
             engine: SQLAlchemy engine for database connection
+            inlaw_files: Optional list of relative file paths to import for InLaw tests
+            inlaw_dir: Optional directory path to scan for InLaw test files
             
         Returns:
             Dictionary with test results summary
         """
         print("===== IN-LAW TESTS =====")
         
-        # Discover all subclasses
+        # Import additional files if specified
+        if inlaw_files:
+            for file_path in inlaw_files:
+                InLaw._import_file(file_path=file_path)
+        
+        # Import from directory if specified
+        if inlaw_dir:
+            InLaw._import_directory(directory_path=inlaw_dir)
+        
+        # Discover all subclasses (including newly imported ones)
         subclasses = InLaw.__subclasses__()
         
         if not subclasses:
@@ -114,7 +225,14 @@ class InLaw(ABC):
             print(f"▶ Running: {test_title}")
             
             try:
-                result = test_class.run(engine)
+                # Suppress only the specific result_format warning during test execution
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+                        category=UserWarning
+                    )
+                    result = test_class.run(engine)
                 
                 if result is True:
                     print(InLaw.ansi_green("✅ PASS"))
@@ -156,6 +274,14 @@ class InLaw(ABC):
             "total": len(subclasses),
             "results": results
         }
+    
+    @staticmethod
+    def run_all_legacy(engine, inlaw_files: Optional[List[str]] = None, inlaw_dir: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Legacy version of run_all that accepts engine as positional argument.
+        Use run_all with named parameters instead.
+        """
+        return InLaw.run_all(engine=engine, inlaw_files=inlaw_files, inlaw_dir=inlaw_dir)
 
 
 # Example child class for demonstration
@@ -169,13 +295,21 @@ class InLawExampleTest(InLaw):
         """Example test that demonstrates the pattern."""
         # Simple test that always passes
         sql = "SELECT 1 as test_value"
-        gdf = InLaw.to_gx_dataframe(sql, engine)
+        gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
         
-        result = gdf.expect_column_values_to_be_between(
-            column="test_value", 
-            min_value=0, 
-            max_value=2
-        )
+        # Suppress only the specific result_format warning during expectation calls
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r".*result_format.*configured at the Validator-level will not be persisted.*",
+                category=UserWarning
+            )
+            
+            result = gx_df.expect_column_values_to_be_between(
+                column="test_value", 
+                min_value=0, 
+                max_value=2
+            )
         
         if result.success:
             return True

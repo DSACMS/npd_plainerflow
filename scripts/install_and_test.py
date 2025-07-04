@@ -23,7 +23,7 @@ def run_command(cmd, description):
         return False
 
 
-def test_import():
+def check_import():
     """Test importing plainerflow"""
     print("\nTesting plainerflow import...")
     try:
@@ -35,7 +35,7 @@ def test_import():
         return False
 
 
-def test_sqlalchemy():
+def check_sqlalchemy():
     """Test SQLAlchemy dependency"""
     print("\nTesting SQLAlchemy dependency...")
     try:
@@ -61,10 +61,10 @@ def main():
         sys.exit(1)
     
     # Test imports
-    if not test_import():
+    if not check_import():
         sys.exit(1)
     
-    if not test_sqlalchemy():
+    if not check_sqlalchemy():
         sys.exit(1)
     
     # Run tests if pytest is available

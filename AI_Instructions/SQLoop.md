@@ -13,7 +13,7 @@ The class file name should be sqloopcicle.py
 
 ---
 
-## ✅ Purpose
+## Purpose
 
 - Provide a simple loop-and-run mechanism for executing SQL statements from a dictionary.
 - Support both **actual execution** and **dry-run mode** with clear console output.
@@ -21,7 +21,7 @@ The class file name should be sqloopcicle.py
 
 ---
 
-## 🧱 Class: `SQLoopcicle`
+## Class: `SQLoopcicle`
 
 ### Static Method
 
@@ -36,7 +36,7 @@ SQLoopcicle.run_sql_loop(
 
 ⸻
 
-📥 Parameters
+Parameters
 
 Name	Type	Description
 sql_dict	dict[str, str]	Mapping of keys to SQL statements. These statements are executed in dictionary order.
@@ -44,9 +44,9 @@ engine	sqlalchemy.engine.Engine	A live SQLAlchemy engine for database interactio
 is_just_print	bool (keyword-only)	If True, SQL statements are printed instead of executed.
 
 
-⸻
+---
 
-🔁 Execution Logic
+Execution Logic
 	1.	Startup Message
 	•	If is_just_print == True:
 
@@ -62,7 +62,7 @@ is_just_print	bool (keyword-only)	If True, SQL statements are printed instead of
 For each (key, sql_string) in sql_dict.items():
 	•	Print:
 
-▶ key_name: SQL_STATEMENT_HERE
+key_name: SQL_STATEMENT_HERE
 
 
 	•	If is_just_print == False, execute the SQL:
@@ -85,27 +85,27 @@ with engine.begin() as conn:
 
 ⸻
 
-🚨 Error Handling
+Error Handling
 	•	Execution errors are not swallowed — they propagate normally.
 	•	Caller is responsible for handling exceptions or wrapping the call in try/except.
 
-⸻
+---
 
-🚫 Non-Goals
+Non-Goals
 	•	No templating or SQL rendering — f-strings or formatting must be handled before passing to run_sql_loop.
 	•	No parameter binding or transaction nesting.
 	•	No Airflow-style DAG logic, no retry mechanisms, no logging plugins.
 
-⸻
+---
 
-🌱 Future Enhancements (Optional)
+Future Enhancements (Optional)
 	•	verbose mode for printing execution time and success indicators.
 	•	Add a second argument (params_dict) to allow parameterized SQL execution.
 	•	on_error hook or strategy pattern for retry, skip, or fail-fast behavior.
 
 ---
 
-## 📋 Implementation Plan
+## Implementation Plan
 
 ### Files to Create/Modify:
 1. **`plainerflow/sqloopcicle.py`** - Main implementation

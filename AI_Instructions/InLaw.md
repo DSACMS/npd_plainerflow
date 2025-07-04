@@ -8,7 +8,7 @@ This is a class that is part of themain plainerflow package. It should be availa
 ---
 
 ## 1 · Concept & Goals
-- **“In-Law” pattern**: Tests run *after* your main pipeline—loudly complain but never block.  
+- **"In-Law" pattern**: Tests run *after* your main pipeline—loudly complain but never block.  
 - **Single-file child classes**: Each test lives in its own file for easy AI-generation and review.  
 - **Zero GX boilerplate**: Parent class handles Spark/SQLAlchemy → GX DataFrame conversion.  
 - **ANSI color console output**: Green = pass, Red = fail (plus error message).  
@@ -57,33 +57,33 @@ Key points
 	•	title and run() are the only things child classes must provide.
 	•	AI agents can implement new tests by editing copies of this template—no global context needed.
 
-⸻
+---
 
 4 · Execution Flow (InLaw.run_all(engine))
 	1.	Discover tests → iterate over subclasses.
 	2.	For each test
-	1.	Print ▶ Running: {title}
+	1.	Print Running: {title}
 	2.	Call child.run(engine) inside try/except:
-	•	True ⇒ print green “PASS”
-	•	str  ⇒ print red “FAIL” + message
-	•	Exception ⇒ print red “ERROR” + exception text
-	3.	Summary → ✅ X passed · ❌ Y failed · 💥 Z errors
+	•	True → print green "PASS"
+	•	str  → print red "FAIL" + message
+	•	Exception → print red "ERROR" + exception text
+	3.	Summary → X passed · Y failed · Z errors
 
-⸻
+---
 
 5 · Console Output Example
 
 ===== IN-LAW TESTS =====
-▶ Running: Ensure table has < 1,000 rows
-✅ PASS
-▶ Running: Check authors table has no null names
-❌ FAIL: 12 null values found in column "name"
+Running: Ensure table has < 1,000 rows
+PASS
+Running: Check authors table has no null names
+FAIL: 12 null values found in column "name"
 ============================================
 Summary: 1 passed · 1 failed
 
 (Green PASS and red FAIL/ ERROR lines use ANSI color codes.)
 
-⸻
+---
 
 6 · Extensibility & Roadmap
 	•	Tags / groups: Allow child classes to set tags = {"perf", "schema"} for selective runs.
@@ -91,4 +91,4 @@ Summary: 1 passed · 1 failed
 	•	Parallel execution: Thread or asyncio pool for large suites.
 	•	Plugin expectations: Auto-register custom GX expectations located alongside child classes.
 
-⸻
+---

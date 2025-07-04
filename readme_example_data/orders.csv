@@ -1,0 +1,8 @@
+order_id,customer_id,product_name,quantity,unit_price,order_date,order_status
+101,1,Widget A,2,19.99,2024-01-16,completed
+102,2,Widget B,1,29.99,2024-01-21,completed
+103,1,Widget C,3,15.50,2024-01-25,completed
+104,3,Widget A,1,19.99,2024-02-02,cancelled
+105,4,Widget B,2,29.99,2024-02-11,shipped
+106,5,Widget A,1,19.99,2024-02-16,pending
+107,2,Widget C,4,15.50,2024-02-20,processing

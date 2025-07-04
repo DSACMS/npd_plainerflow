@@ -1,4 +1,5 @@
 # FrostDict
+
 FrostDict is a frozen dictionary (at the top dictionary level)
 
 This is a class that is part of the main plainerflow package. It should be available in the namespace after an `import plainerflow` statement in python and should not need to be specifically imported.
@@ -8,6 +9,7 @@ The files should be called plainerflow/frostdict.py
 This should specifically work with and be tested with the SQL loop classes as described in AI_Instructions/SQLoop.md and implemented in plainerflow/sqloopcicle.py
 
 ## 1. Scope & Goals
+
 - Provide the **thinnest possible abstraction** over SQLAlchemy for batch execution of templated SQL.
 - All configuration and query text lives in a **Frozen Dictionary** object.
 - Emphasis on **immutability, clarity, and crash-fast behavior** rather than full-featured orchestration.
@@ -15,12 +17,15 @@ This should specifically work with and be tested with the SQL loop classes as de
 ---
 
 ## 2. Core Component – `FrostDict`
+
 ### Purpose
+
 A lightweight container for configuration and SQL templates that:
 1. **Feels like a normal `dict` for reads.**  
 2. **Prevents accidental re-assignment of top-level keys.**
 
 ### Required Behaviors
+
 | Aspect | Requirement |
 |--------|-------------|
 | API surface | `[]` get access, `.keys()`, `.items()`, iteration over keys |
@@ -32,6 +37,7 @@ A lightweight container for configuration and SQL templates that:
 | Repr / str | Clear, one-line “FrostDict({...})” for debugging |
 
 ### Error Handling
+
 - **`FrozenKeyError`** (custom): raised on duplicate top-level assignment.
 - Underlying mutable operations (e.g., modifying a list stored as a value) are *not* trapped—caller responsibility.
 

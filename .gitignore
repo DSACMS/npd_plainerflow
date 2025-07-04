@@ -134,3 +134,4 @@ dmypy.json
 # DURC specific
 durc_config/
 durc_generated/
+.tmp/

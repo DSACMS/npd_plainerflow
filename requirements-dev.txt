@@ -1,0 +1,12 @@
+# Development dependencies
+pytest>=6.0
+pytest-cov
+black
+flake8
+mypy
+twine
+wheel
+build
+
+# Include base requirements
+-r requirements.txt

@@ -96,9 +96,8 @@ class CredentialFinder:
             except Exception:
                 pass  # Continue to fallback
         
-        # Priority 5: SQLite Fallback
-        fallback_path = str(Path.home() / "plainerflow_fallback.db")
-        return CredentialFinder._create_sqlite_engine(fallback_path, verbose, is_fallback=True)
+        # Priority 5: PostgreSQL Testing Fallback
+        return CredentialFinder._create_testing_postgresql_engine(verbose)
     
     @staticmethod
     def _try_spark_connection(verbose: bool) -> Optional[sqlalchemy.engine.Engine]:
@@ -204,6 +203,48 @@ class CredentialFinder:
             
         except Exception as e:
             raise RuntimeError(f"Google Colab credentials access failed: {str(e)}")
+    
+    @staticmethod
+    def _create_testing_postgresql_engine(verbose: bool) -> sqlalchemy.engine.Engine:
+        """
+        Create a testing PostgreSQL engine using testcontainers.
+        
+        Parameters
+        ----------
+        verbose : bool
+            Whether to print verbose output.
+        """
+        try:
+            from testcontainers.postgres import PostgreSqlContainer
+        except ImportError:
+            # Fall back to SQLite if testcontainers is not available
+            if verbose:
+                print("[CredentialFinder] testcontainers not available, falling back to SQLite")
+            fallback_path = str(Path.home() / "plainerflow_fallback.db")
+            return CredentialFinder._create_sqlite_engine(fallback_path, verbose, is_fallback=True)
+        
+        try:
+            # Create a PostgreSQL container and store it globally to keep it alive
+            postgres_container = PostgreSqlContainer("postgres:13")
+            postgres_container.start()
+            
+            # Store the container globally so it doesn't get garbage collected
+            CredentialFinder._postgres_container = postgres_container
+            
+            # Get the connection URL
+            connection_url = postgres_container.get_connection_url()
+            
+            if verbose:
+                print(f"[CredentialFinder] Using testcontainers PostgreSQL database: {connection_url}")
+            
+            return create_engine(connection_url)
+            
+        except Exception as e:
+            # Fall back to SQLite if PostgreSQL setup fails
+            if verbose:
+                print(f"[CredentialFinder] PostgreSQL container setup failed ({str(e)}), falling back to SQLite")
+            fallback_path = str(Path.home() / "plainerflow_fallback.db")
+            return CredentialFinder._create_sqlite_engine(fallback_path, verbose, is_fallback=True)
     
     @staticmethod
     def _try_env_connection(env_path: str, verbose: bool) -> Optional[sqlalchemy.engine.Engine]:

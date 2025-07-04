@@ -15,21 +15,30 @@ Run this script to see PlainerFlow in action with the example CSV data.
 import plainerflow
 from plainerflow import CredentialFinder, DBTable, FrostDict, SQLoopcicle, InLaw
 import pandas as pd
+import sqlalchemy
 from pathlib import Path
 
 def main():
     print("🚀 PlainerFlow Pipeline Example")
     print("=" * 50)
     
-    # Step 1: Get database connection (automatically detects environment)
+    # Step 1: Get database connection using PostgreSQL testcontainer
     print("Step 1: Connecting to database...")
-    engine = CredentialFinder.detect_config(verbose=True)
+    try:
+        from testcontainers.postgres import PostgresContainer
+        postgres = PostgresContainer("postgres:15")
+        postgres.start()
+        engine = sqlalchemy.create_engine(postgres.get_connection_url())
+        print("✅ Connected to PostgreSQL test container")
+    except ImportError:
+        print("❌ testcontainers not available, falling back to CredentialFinder")
+        engine = CredentialFinder.detect_config(verbose=True)
     
-    # Step 2: Define target tables using DBTable before they exist
+    # Step 2: Define target tables using DBTable with proper hierarchy (schema.table)
     print("\nStep 2: Defining table references...")
-    customers_table = DBTable(database='analytics', table='customers')
-    orders_table = DBTable(database='analytics', table='orders')
-    customer_summary_table = DBTable(database='analytics', table='customer_summary')
+    customers_table = DBTable(schema='public', table='customers')
+    orders_table = DBTable(schema='public', table='orders')
+    customer_summary_table = DBTable(schema='public', table='customer_summary')
     
     print(f"Will create tables: {customers_table}, {orders_table}, {customer_summary_table}")
     
@@ -44,11 +53,11 @@ def main():
         print(f"   Expected files: readme_example_data/customers.csv, readme_example_data/orders.csv")
         return
     
-    # Step 4: Import data to SQLite
+    # Step 4: Import data to PostgreSQL
     print("\nStep 4: Importing data to database...")
-    customers_df.to_sql('customers', engine, if_exists='replace', index=False)
-    orders_df.to_sql('orders', engine, if_exists='replace', index=False)
-    print("✅ CSV data imported to SQLite")
+    customers_df.to_sql('customers', engine, if_exists='replace', index=False, schema='public')
+    orders_df.to_sql('orders', engine, if_exists='replace', index=False, schema='public')
+    print("✅ CSV data imported to PostgreSQL")
     
     # Step 5: Define transformation SQL using FrostDict
     print("\nStep 5: Defining SQL transformations...")
@@ -114,11 +123,11 @@ def main():
             sql = f"SELECT COUNT(*) as null_count FROM {customer_summary_table} WHERE full_name IS NULL"
             gdf = InLaw.to_gx_dataframe(sql, engine)
             
-            result = gdf.expect_column_values_to_equal(column="null_count", value=0)
+            null_count = gdf.iloc[0]['null_count']
             
-            if result.success:
+            if null_count == 0:
                 return True
-            return f"Found {gdf.iloc[0]['null_count']} null names in customer summary"
+            return f"Found {null_count} null names in customer summary"
     
     class ValidateTotalSpentIsPositive(InLaw):
         title = "Active customers with orders should have positive total_spent"
@@ -132,11 +141,11 @@ def main():
             """
             gdf = InLaw.to_gx_dataframe(sql, engine)
             
-            result = gdf.expect_column_values_to_equal(column="invalid_count", value=0)
+            invalid_count = gdf.iloc[0]['invalid_count']
             
-            if result.success:
+            if invalid_count == 0:
                 return True
-            return f"Found {gdf.iloc[0]['invalid_count']} customers with orders but non-positive spending"
+            return f"Found {invalid_count} customers with orders but non-positive spending"
     
     # Step 8: Run validation tests
     print("\nStep 8: Running data validation tests...")

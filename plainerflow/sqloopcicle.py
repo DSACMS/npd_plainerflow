@@ -9,6 +9,7 @@ Built for clarity, testability, and minimal abstraction.
 from typing import Dict, Union, Mapping
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
+import pandas as pd
 
 
 class SQLoopcicle:
@@ -21,11 +22,59 @@ class SQLoopcicle:
     """
     
     @staticmethod
+    def get_sql_type_icon(sql_string: str) -> str:
+        """
+        Detect the type of SQL statement and return the appropriate icon.
+        
+        Args:
+            sql_string: The SQL statement to analyze
+            
+        Returns:
+            str: Icon representing the SQL statement type:
+                🔻 for DROP statements
+                📥 for INSERT statements
+                Green ▣ for CREATE statements
+                Green ⇲ for CREATE TABLE AS SELECT (CTAS) statements
+                🔍 for SELECT statements
+        """
+        # ANSI color codes
+        GREEN = "\033[32m"
+        RESET = "\033[0m"
+        
+        # Normalize the SQL string for analysis
+        sql_upper = sql_string.strip().upper()
+        
+        # Check for DROP statements
+        if sql_upper.startswith('DROP'):
+            return '🔻'
+        
+        # Check for INSERT statements
+        if sql_upper.startswith('INSERT'):
+            return '📥'
+        
+        # Check for CREATE TABLE AS SELECT (CTAS) - must come before general CREATE check
+        if sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper:
+            return f'{GREEN}⇲{RESET}'
+        
+        # Check for general CREATE statements
+        if sql_upper.startswith('CREATE'):
+            return f'{GREEN}▣{RESET}'
+        
+        # Check for SELECT statements
+        if sql_upper.startswith('SELECT'):
+            return '🔍'
+        
+        # Default icon for other statement types
+        return '▶'
+    
+    @staticmethod
     def run_sql_loop(
         sql_dict: Mapping[str, str],
         engine: Engine,
         *,
-        is_just_print: bool = False
+        is_just_print: bool = False,
+        is_display_select: bool = True,
+        select_display_rows: int = 50
     ) -> None:
         """
         Execute SQL statements from a dictionary in order.
@@ -35,6 +84,10 @@ class SQLoopcicle:
             engine: A live SQLAlchemy engine for database interaction.
             is_just_print: If True, SQL statements are printed instead of executed.
                           Keyword-only parameter.
+            is_display_select: If True, SELECT query results are displayed.
+                              Keyword-only parameter. Defaults to True.
+            select_display_rows: Number of rows to display from SELECT queries.
+                               Keyword-only parameter. Defaults to 50.
         
         Raises:
             Any SQLAlchemy or database exceptions are propagated to the caller.
@@ -55,23 +108,52 @@ class SQLoopcicle:
         """
         # Print startup message
         if is_just_print:
-            print("===== DRY-RUN MODE – NO SQL WILL BE EXECUTED =====")
+            print("⏩ =====  DRY-RUN MODE – NO SQL WILL BE EXECUTED =====")
         else:
-            print("===== EXECUTING SQL LOOP =====")
+            print("⏩ =====  EXECUTING SQL LOOP =====")
         
-        # Loop through SQL dictionary
-        for key, sql_string in sql_dict.items():
-            # Print the SQL statement
-            print(f"▶ {key}: {sql_string}")
-        
-        # Execute all SQL if not in dry-run mode
+        # Single loop: print and execute each SQL statement
         if not is_just_print and sql_dict:
-            with engine.begin() as conn:
+            with engine.connect() as conn:
                 for key, sql_string in sql_dict.items():
-                    conn.execute(text(sql_string))
+                    # Print the SQL statement with appropriate icon
+                    icon = SQLoopcicle.get_sql_type_icon(sql_string)
+                    print(f"{icon} {key}:\n{sql_string}\n")
+                    
+                    sql_upper = sql_string.strip().upper()
+                    
+                    # Handle SELECT queries differently if display is enabled
+                    if (sql_upper.startswith('SELECT') and 
+                        is_display_select and 
+                        not (sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper)):
+                        
+                        # Use pandas to read and display SELECT results
+                        try:
+                            select_data = pd.read_sql_query(sql_string, conn, params=None)
+                            if len(select_data) > 0:
+                                # Limit rows displayed
+                                display_data = select_data.head(select_display_rows)
+                                print(f"📊 Results for {key} (showing {len(display_data)} of {len(select_data)} rows):")
+                                print(display_data.to_string(index=False))
+                                print()  # Add blank line for readability
+                            else:
+                                print(f"📊 Results for {key}: No rows returned")
+                                print()
+                        except Exception as e:
+                            print(f"❌ Error executing SELECT query {key}: {e}")
+                            print()
+                    else:
+                        # Execute non-SELECT queries or when display is disabled
+                        with engine.begin() as trans_conn:
+                            trans_conn.execute(text(sql_string))
+        else:
+            # Dry-run mode: just print the SQL statements
+            for key, sql_string in sql_dict.items():
+                # Print the SQL statement with appropriate icon
+                icon = SQLoopcicle.get_sql_type_icon(sql_string)
+                print(f"{icon} {key}:\n{sql_string}\n")
         
         # Print end message
+        print("⏪ ===== SQL LOOP COMPLETE =====")
         if is_just_print:
-            print("===== I AM NOT RUNNING SQL =====")
-        else:
-            print("===== SQL LOOP COMPLETE =====")
+            print("🟡 ===== I AM NOT RUNNING SQL =====")

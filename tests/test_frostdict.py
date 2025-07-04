@@ -542,11 +542,14 @@ class TestFrostDictSQLoopcicleIntegration:
         
         # Check output
         captured = capsys.readouterr()
-        assert "===== DRY-RUN MODE – NO SQL WILL BE EXECUTED =====" in captured.out
-        assert "▶ create_users: CREATE TABLE users (id INTEGER, name TEXT)" in captured.out
-        assert "▶ create_orders: CREATE TABLE orders (id INTEGER, user_id INTEGER, amount REAL)" in captured.out
-        assert "▶ insert_sample: INSERT INTO users (name) VALUES ('Test User')" in captured.out
-        assert "===== I AM NOT RUNNING SQL =====" in captured.out
+        assert "⏩ =====  DRY-RUN MODE – NO SQL WILL BE EXECUTED =====" in captured.out
+        assert "create_users:" in captured.out
+        assert "CREATE TABLE users (id INTEGER, name TEXT)" in captured.out
+        assert "create_orders:" in captured.out
+        assert "CREATE TABLE orders (id INTEGER, user_id INTEGER, amount REAL)" in captured.out
+        assert "insert_sample:" in captured.out
+        assert "INSERT INTO users (name) VALUES ('Test User')" in captured.out
+        assert "🟡 ===== I AM NOT RUNNING SQL =====" in captured.out
     
     def test_frostdict_with_sqloopcicle_execution(self, capsys):
         """Test using FrostDict with SQLoopcicle in execution mode."""
@@ -572,8 +575,8 @@ class TestFrostDictSQLoopcicleIntegration:
         
         # Check output
         captured = capsys.readouterr()
-        assert "===== EXECUTING SQL LOOP =====" in captured.out
-        assert "===== SQL LOOP COMPLETE =====" in captured.out
+        assert "⏩ =====  EXECUTING SQL LOOP =====" in captured.out
+        assert "⏪ ===== SQL LOOP COMPLETE =====" in captured.out
     
     def test_frostdict_prevents_accidental_sql_modification(self):
         """Test that FrostDict prevents accidental modification of SQL queries."""

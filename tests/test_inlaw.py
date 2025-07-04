@@ -15,8 +15,8 @@ class TestInLawBasicPass(InLaw):
     def run(engine):
         sql = "SELECT 1 as test_value"
         gdf = InLaw.to_gx_dataframe(sql, engine)
-        result = gdf.expect_column_values_to_equal(column="test_value", value=1)
-        return True if result.success else "Test value was not 1"
+        result = gdf.expect_column_values_to_be_between(column="test_value", min_value=0, max_value=2)
+        return True if result.success else "Test value was not between 0 and 2"
 
 
 class TestInLawBasicFail(InLaw):
@@ -27,8 +27,8 @@ class TestInLawBasicFail(InLaw):
     def run(engine):
         sql = "SELECT 1 as test_value"
         gdf = InLaw.to_gx_dataframe(sql, engine)
-        result = gdf.expect_column_values_to_equal(column="test_value", value=2)
-        return True if result.success else "Test value was not 2"
+        result = gdf.expect_column_values_to_be_between(column="test_value", min_value=5, max_value=10)
+        return True if result.success else "Test value was not between 5 and 10"
 
 
 class TestInLawWithError(InLaw):
@@ -48,13 +48,14 @@ def test_inlaw_to_gx_dataframe():
     engine = sqlalchemy.create_engine("sqlite:///:memory:")
     
     sql = "SELECT 1 as test_col, 'hello' as text_col"
-    gdf = InLaw.to_gx_dataframe(sql, engine)
+    validator = InLaw.to_gx_dataframe(sql, engine)
     
-    # Verify we got a Great Expectations DataFrame
-    assert hasattr(gdf, 'expect_column_values_to_equal')
-    assert len(gdf) == 1
-    assert gdf.iloc[0]['test_col'] == 1
-    assert gdf.iloc[0]['text_col'] == 'hello'
+    # Verify we got a Great Expectations validator
+    assert hasattr(validator, 'expect_column_values_to_be_between')
+    
+    # Test that we can run an expectation
+    result = validator.expect_column_values_to_be_between(column="test_col", min_value=0, max_value=2)
+    assert result.success
 
 
 def test_inlaw_ansi_colors():

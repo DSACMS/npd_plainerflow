@@ -62,9 +62,14 @@ class InLaw(ABC):
             with engine.connect() as conn:
                 pandas_df = pd.read_sql_query(sqlalchemy.text(sql), conn)
             
-            # Convert to Great Expectations DataFrame
-            gdf = gx.from_pandas(pandas_df)
-            return gdf
+            # Convert to Great Expectations DataFrame using the correct API
+            context = gx.get_context()
+            datasource = context.sources.add_pandas("pandas_datasource")
+            data_asset = datasource.add_dataframe_asset("dataframe_asset")
+            batch_request = data_asset.build_batch_request(dataframe=pandas_df)
+            validator = context.get_validator(batch_request=batch_request)
+            
+            return validator
             
         except Exception as e:
             raise RuntimeError(f"Failed to execute SQL and create GX DataFrame: {e}")

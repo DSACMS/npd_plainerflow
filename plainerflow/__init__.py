@@ -3,8 +3,8 @@ plainerflow - A Python package for plain flow operations
 """
 
 __version__ = "0.1.0"
-__author__ = "Your Name"
-__email__ = "your.email@example.com"
+__author__ = "Fred Trotter"
+__email__ = "fred.trotter@gmail.com"
 
 # Import all main classes/functions here so they're available when someone does:
 # import plainerflow

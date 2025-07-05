@@ -10,6 +10,9 @@ from typing import Dict, Union, Mapping
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 import pandas as pd
+import time
+import datetime as dt
+import human_readable
 
 
 class SQLoopcicle:
@@ -130,7 +133,16 @@ class SQLoopcicle:
                             
                             # Use pandas to read and display SELECT results
                             try:
+                                start_time = time.time()
                                 select_data = pd.read_sql_query(sql_string, conn, params=None)
+                                end_time = time.time()
+                                
+                                # Calculate and display execution time
+                                execution_time = end_time - start_time
+                                time_delta = dt.timedelta(seconds=execution_time)
+                                readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
+                                print(f"⏱️  Query executed in: {readable_time}")
+                                
                                 if len(select_data) > 0:
                                     # Limit rows displayed
                                     display_data = select_data.head(select_display_rows)
@@ -147,8 +159,17 @@ class SQLoopcicle:
                         else:
                             # Execute non-SELECT queries or when display is disabled
                             try:
+                                start_time = time.time()
                                 with engine.begin() as trans_conn:
                                     trans_conn.execute(text(sql_string))
+                                end_time = time.time()
+                                
+                                # Calculate and display execution time
+                                execution_time = end_time - start_time
+                                time_delta = dt.timedelta(seconds=execution_time)
+                                readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
+                                print(f"⏱️  Query executed in: {readable_time}")
+                                print()  # Add blank line for readability
                             except Exception as e:
                                 line = '-' * 80
                                 print(f"❌ Error executing SQL query {key}:\nError Start {line}v\n\n{e}\n\n^{line}----------- Error End")

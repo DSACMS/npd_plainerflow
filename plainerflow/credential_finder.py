@@ -254,6 +254,9 @@ class CredentialFinder:
         Returns None if .env file doesn't exist.
         Raises RuntimeError if .env exists but credentials are incomplete.
         """
+
+        is_debug = True
+
         if not os.path.exists(env_path):
             return None  # .env file doesn't exist, continue to fallback
         
@@ -288,7 +291,30 @@ class CredentialFinder:
         port = os.getenv('DB_PORT')
         host = os.getenv('DB_HOST')
         
-        sql_url = f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
+        database_type = os.getenv('DB_TYPE', 'MYSQL').upper()  # Default to MYSQL if not specified
+
+        if(is_debug):
+            print(f"CredentialFinder: Detected DB_TYPE of {database_type}")
+
+        # Build connection string based on database type
+        if database_type == 'POSTGRESQL':
+            sql_url = f"postgresql+psycopg2://{username}:{password}@{host}:{port}/{database}"
+        elif database_type == 'MYSQL':
+            sql_url = f"mysql+pymysql://{username}:{password}@{host}:{port}/{database}"
+        elif database_type == 'SQLITE':
+            # For SQLite, we only need the database path (ignore host/port/username/password)
+            sqlite_path = database if database else 'plainerflow.db'
+            sql_url = f"sqlite:///{sqlite_path}"
+        else:
+            # For other database types, try a generic approach
+            # This covers databases like Oracle, SQL Server, etc.
+            driver_mapping = {
+                'ORACLE': 'oracle+cx_oracle',
+                'SQLSERVER': 'mssql+pyodbc',
+                'MSSQL': 'mssql+pyodbc'
+            }
+            driver = driver_mapping.get(database_type, database_type.lower())
+            sql_url = f"{driver}://{username}:{password}@{host}:{port}/{database}"
         
         if verbose:
             print(f"[CredentialFinder] Using .env file credentials from {env_path}.")

@@ -90,8 +90,8 @@ class SQLoopcicle:
                                Keyword-only parameter. Defaults to 50.
         
         Raises:
-            Any SQLAlchemy or database exceptions are propagated to the caller.
-            No error handling is performed within this method.
+            No exceptions are raised. SQL errors are caught and handled gracefully,
+            with error messages printed and execution terminated on first error.
         
         Example:
             >>> from sqlalchemy import create_engine
@@ -114,38 +114,50 @@ class SQLoopcicle:
         
         # Single loop: print and execute each SQL statement
         if not is_just_print and sql_dict:
-            with engine.connect() as conn:
-                for key, sql_string in sql_dict.items():
-                    # Print the SQL statement with appropriate icon
-                    icon = SQLoopcicle.get_sql_type_icon(sql_string)
-                    print(f"{icon} {key}:\n{sql_string}\n")
-                    
-                    sql_upper = sql_string.strip().upper()
-                    
-                    # Handle SELECT queries differently if display is enabled
-                    if (sql_upper.startswith('SELECT') and 
-                        is_display_select and 
-                        not (sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper)):
+            try:
+                with engine.connect() as conn:
+                    for key, sql_string in sql_dict.items():
+                        # Print the SQL statement with appropriate icon
+                        icon = SQLoopcicle.get_sql_type_icon(sql_string)
+                        print(f"{icon} {key}:\n{sql_string}\n")
                         
-                        # Use pandas to read and display SELECT results
-                        try:
-                            select_data = pd.read_sql_query(sql_string, conn, params=None)
-                            if len(select_data) > 0:
-                                # Limit rows displayed
-                                display_data = select_data.head(select_display_rows)
-                                print(f"📊 Results for {key} (showing {len(display_data)} of {len(select_data)} rows):")
-                                print(display_data.to_string(index=False))
-                                print()  # Add blank line for readability
-                            else:
-                                print(f"📊 Results for {key}: No rows returned")
-                                print()
-                        except Exception as e:
-                            print(f"❌ Error executing SELECT query {key}: {e}")
-                            print()
-                    else:
-                        # Execute non-SELECT queries or when display is disabled
-                        with engine.begin() as trans_conn:
-                            trans_conn.execute(text(sql_string))
+                        sql_upper = sql_string.strip().upper()
+                        
+                        # Handle SELECT queries differently if display is enabled
+                        if (sql_upper.startswith('SELECT') and 
+                            is_display_select and 
+                            not (sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper)):
+                            
+                            # Use pandas to read and display SELECT results
+                            try:
+                                select_data = pd.read_sql_query(sql_string, conn, params=None)
+                                if len(select_data) > 0:
+                                    # Limit rows displayed
+                                    display_data = select_data.head(select_display_rows)
+                                    print(f"📊 Results for {key} (showing {len(display_data)} of {len(select_data)} rows):")
+                                    print(display_data.to_string(index=False))
+                                    print()  # Add blank line for readability
+                                else:
+                                    print(f"📊 Results for {key}: No rows returned")
+                                    print()
+                            except Exception as e:
+                                print(f"❌ Error executing SELECT query {key}: {e}")
+                                print("🛑 SQL loop terminated due to error")
+                                return
+                        else:
+                            # Execute non-SELECT queries or when display is disabled
+                            try:
+                                with engine.begin() as trans_conn:
+                                    trans_conn.execute(text(sql_string))
+                            except Exception as e:
+                                line = '-' * 80
+                                print(f"❌ Error executing SQL query {key}:\nError Start {line}v\n\n{e}\n\n^{line}----------- Error End")
+                                print("🛑 SQL loop terminated due to error")
+                                return
+            except Exception as e:
+                print(f"❌ Database connection or general error:\nError---\n\n{e}\n---")
+                print("🛑 SQL loop terminated due to error")
+                return
         else:
             # Dry-run mode: just print the SQL statements
             for key, sql_string in sql_dict.items():

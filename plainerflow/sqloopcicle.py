@@ -25,50 +25,56 @@ class SQLoopcicle:
     """
     
     @staticmethod
-    def get_sql_type_icon(sql_string: str) -> str:
+    def get_sql_type_icon(sql_string: str, *, is_plain_text: bool = False) -> str:
         """
         Detect the type of SQL statement and return the appropriate icon.
         
         Args:
             sql_string: The SQL statement to analyze
+            is_plain_text: If True, returns ASCII-compatible text instead of Unicode icons
             
         Returns:
-            str: Icon representing the SQL statement type:
-                🔻 for DROP statements
-                📥 for INSERT statements
-                Green ▣ for CREATE statements
-                Green ⇲ for CREATE TABLE AS SELECT (CTAS) statements
-                🔍 for SELECT statements
+            str: Icon or text representing the SQL statement type:
+                🔻/DROP for DROP statements
+                📥/INSERT for INSERT statements
+                Green ▣/CREATE for CREATE statements
+                Green ⇲/CTAS for CREATE TABLE AS SELECT (CTAS) statements
+                🔍/SELECT for SELECT statements
         """
-        # ANSI color codes
-        GREEN = "\033[32m"
-        RESET = "\033[0m"
-        
         # Normalize the SQL string for analysis
         sql_upper = sql_string.strip().upper()
         
-        # Check for DROP statements
-        if sql_upper.startswith('DROP'):
-            return '🔻'
-        
-        # Check for INSERT statements
-        if sql_upper.startswith('INSERT'):
-            return '📥'
-        
-        # Check for CREATE TABLE AS SELECT (CTAS) - must come before general CREATE check
-        if sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper:
-            return f'{GREEN}⇲{RESET}'
-        
-        # Check for general CREATE statements
-        if sql_upper.startswith('CREATE'):
-            return f'{GREEN}▣{RESET}'
-        
-        # Check for SELECT statements
-        if sql_upper.startswith('SELECT'):
-            return '🔍'
-        
-        # Default icon for other statement types
-        return '▶'
+        if is_plain_text:
+            # ASCII-compatible text alternatives
+            if sql_upper.startswith('DROP'):
+                return 'DROP'
+            elif sql_upper.startswith('INSERT'):
+                return 'INSERT'
+            elif sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper:
+                return 'CTAS'
+            elif sql_upper.startswith('CREATE'):
+                return 'CREATE'
+            elif sql_upper.startswith('SELECT'):
+                return 'SELECT'
+            else:
+                return 'EXEC'
+        else:
+            # Unicode icons with ANSI color codes
+            GREEN = "\033[32m"
+            RESET = "\033[0m"
+            
+            if sql_upper.startswith('DROP'):
+                return '🔻'
+            elif sql_upper.startswith('INSERT'):
+                return '📥'
+            elif sql_upper.startswith('CREATE TABLE') and ' AS SELECT' in sql_upper:
+                return f'{GREEN}⇲{RESET}'
+            elif sql_upper.startswith('CREATE'):
+                return f'{GREEN}▣{RESET}'
+            elif sql_upper.startswith('SELECT'):
+                return '🔍'
+            else:
+                return '▶'
     
     @staticmethod
     def run_sql_loop(
@@ -77,7 +83,8 @@ class SQLoopcicle:
         *,
         is_just_print: bool = False,
         is_display_select: bool = True,
-        select_display_rows: int = 50
+        select_display_rows: int = 50,
+        is_plain_text_print: bool = False
     ) -> None:
         """
         Execute SQL statements from a dictionary in order.
@@ -91,6 +98,8 @@ class SQLoopcicle:
                               Keyword-only parameter. Defaults to True.
             select_display_rows: Number of rows to display from SELECT queries.
                                Keyword-only parameter. Defaults to 50.
+            is_plain_text_print: If True, uses ASCII-compatible text instead of Unicode icons.
+                                Keyword-only parameter. Defaults to False.
         
         Raises:
             No exceptions are raised. SQL errors are caught and handled gracefully,
@@ -109,11 +118,31 @@ class SQLoopcicle:
             ▶ insert_data: INSERT INTO users VALUES (1, 'Alice')
             ===== SQL LOOP COMPLETE =====
         """
+        # Define all icon mappings at the top of the function
+        if is_plain_text_print:
+            start_icon = "START"
+            end_icon = "END"
+            warning_icon = "WARNING"
+            time_icon = "TIME"
+            results_icon = "RESULTS"
+            error_icon = "ERROR"
+            stop_icon = "STOP"
+            dash_char = "-"
+        else:
+            start_icon = "⏩"
+            end_icon = "⏪"
+            warning_icon = "🟡"
+            time_icon = "⏱️"
+            results_icon = "📊"
+            error_icon = "❌"
+            stop_icon = "🛑"
+            dash_char = "–"
+        
         # Print startup message
         if is_just_print:
-            print("⏩ =====  DRY-RUN MODE – NO SQL WILL BE EXECUTED =====")
+            print(f"-- {start_icon} =====  DRY-RUN MODE {dash_char} NO SQL WILL BE EXECUTED =====")
         else:
-            print("⏩ =====  EXECUTING SQL LOOP =====")
+            print(f"-- {start_icon} =====  EXECUTING SQL LOOP =====")
         
         # Single loop: print and execute each SQL statement
         if not is_just_print and sql_dict:
@@ -121,8 +150,9 @@ class SQLoopcicle:
                 with engine.connect() as conn:
                     for key, sql_string in sql_dict.items():
                         # Print the SQL statement with appropriate icon
-                        icon = SQLoopcicle.get_sql_type_icon(sql_string)
-                        print(f"{icon} {key}:\n{sql_string}\n")
+                        icon = SQLoopcicle.get_sql_type_icon(sql_string, is_plain_text=is_plain_text_print)
+                        print(f"-- {icon} {key}:")
+                        print(f"{sql_string}\n")
                         
                         sql_upper = sql_string.strip().upper()
                         
@@ -141,20 +171,20 @@ class SQLoopcicle:
                                 execution_time = end_time - start_time
                                 time_delta = dt.timedelta(seconds=execution_time)
                                 readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
-                                print(f"⏱️  Query executed in: {readable_time}")
+                                print(f"-- {time_icon}  Query executed in: {readable_time}")
                                 
                                 if len(select_data) > 0:
                                     # Limit rows displayed
                                     display_data = select_data.head(select_display_rows)
-                                    print(f"📊 Results for {key} (showing {len(display_data)} of {len(select_data)} rows):")
-                                    print(display_data.to_string(index=False))
-                                    print()  # Add blank line for readability
+                                    print(f"-- {results_icon} Results for {key} (showing {len(display_data)} of {len(select_data)} rows):")
+                                    print(f"-- {display_data.to_string(index=False)}")
+                                    print("-- ")  # Add blank line for readability
                                 else:
-                                    print(f"📊 Results for {key}: No rows returned")
-                                    print()
+                                    print(f"-- {results_icon} Results for {key}: No rows returned")
+                                    print("-- ")
                             except Exception as e:
-                                print(f"❌ Error executing SELECT query {key}: {e}")
-                                print("🛑 SQL loop terminated due to error")
+                                print(f"-- {error_icon} Error executing SELECT query {key}: {e}")
+                                print(f"-- {stop_icon} SQL loop terminated due to error")
                                 return
                         else:
                             # Execute non-SELECT queries or when display is disabled
@@ -168,25 +198,26 @@ class SQLoopcicle:
                                 execution_time = end_time - start_time
                                 time_delta = dt.timedelta(seconds=execution_time)
                                 readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
-                                print(f"⏱️  Query executed in: {readable_time}")
-                                print()  # Add blank line for readability
+                                print(f"-- {time_icon}  Query executed in: {readable_time}")
+                                print("-- ")  # Add blank line for readability
                             except Exception as e:
                                 line = '-' * 80
-                                print(f"❌ Error executing SQL query {key}:\nError Start {line}v\n\n{e}\n\n^{line}----------- Error End")
-                                print("🛑 SQL loop terminated due to error")
+                                print(f"-- {error_icon} Error executing SQL query {key}:\n-- Error Start {line}v\n-- \n-- {e}\n-- \n-- ^{line}----------- Error End")
+                                print(f"-- {stop_icon} SQL loop terminated due to error")
                                 return
             except Exception as e:
-                print(f"❌ Database connection or general error:\nError---\n\n{e}\n---")
-                print("🛑 SQL loop terminated due to error")
+                print(f"-- {error_icon} Database connection or general error:\n-- Error---\n-- \n-- {e}\n-- ---")
+                print(f"-- {stop_icon} SQL loop terminated due to error")
                 return
         else:
             # Dry-run mode: just print the SQL statements
             for key, sql_string in sql_dict.items():
                 # Print the SQL statement with appropriate icon
-                icon = SQLoopcicle.get_sql_type_icon(sql_string)
-                print(f"{icon} {key}:\n{sql_string}\n")
+                icon = SQLoopcicle.get_sql_type_icon(sql_string, is_plain_text=is_plain_text_print)
+                print(f"-- {icon} {key}:")
+                print(f"{sql_string}\n")
         
         # Print end message
-        print("⏪ ===== SQL LOOP COMPLETE =====")
+        print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====")
         if is_just_print:
-            print("🟡 ===== I AM NOT RUNNING SQL =====")
+            print(f"-- {warning_icon} ===== I AM NOT RUNNING SQL =====")

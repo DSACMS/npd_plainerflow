@@ -10,7 +10,7 @@ import re
 from typing import Optional, Dict, List, Any, Union
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import DeclarativeBase
-
+from pprint import pprint
 
 class DBTableError(Exception):
     """Base exception for DBTable-related errors."""
@@ -237,6 +237,9 @@ class DBTable:
         Raises:
             DBTableValidationError: If no table/view is defined or suffix is invalid
         """
+
+        suffix = suffix.lstrip('_') # We will add the underscore back in later. 
+
         # Validate suffix
         self._validate_name(suffix, "suffix")
         
@@ -264,6 +267,11 @@ class DBTable:
                 else:
                     new_params[level] = value
         
+        is_debug = True
+        if(is_debug):
+            print("DBTable: Making Child with params of")
+            pprint(new_params)
+
         return DBTable(**new_params)
     
     def create_child(self, suffix: str) -> 'DBTable':

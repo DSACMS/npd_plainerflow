@@ -267,7 +267,7 @@ class DBTable:
                 else:
                     new_params[level] = value
         
-        is_debug = True
+        is_debug = False
         if(is_debug):
             print("DBTable: Making Child with params of")
             pprint(new_params)

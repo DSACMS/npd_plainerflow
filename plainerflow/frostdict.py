@@ -6,8 +6,9 @@ dict for reads but prevents accidental re-assignment of top-level keys.
 Emphasis on immutability, clarity, and crash-fast behavior.
 """
 
-from typing import Any, Dict, Iterator, KeysView, ItemsView, Union
+from typing import Any, Dict, Iterator, KeysView, ItemsView, Union, Optional
 from collections.abc import Mapping
+import inspect
 
 
 class FrozenKeyError(Exception):
@@ -15,7 +16,90 @@ class FrozenKeyError(Exception):
     Custom exception raised when attempting to reassign an existing top-level key
     in a FrostDict.
     """
-    pass
+    
+    def __init__(self, key: Any, message: Optional[str] = None):
+        self.key = key
+        self.caller_info = self._find_caller_location()
+        
+        if message is None:
+            message = f"Cannot reassign existing key '{key}' in FrostDict"
+        
+        super().__init__(message)
+    
+    def _find_caller_location(self):
+        """Find the location in user code where the duplicate key was used."""
+        try:
+            # Get the current stack
+            stack = inspect.stack()
+            
+            # Look for the frame that's not in frostdict.py
+            for frame_info in stack:
+                filename = frame_info.filename
+                if not filename.endswith('frostdict.py'):
+                    return {
+                        'filename': filename,
+                        'lineno': frame_info.lineno,
+                        'function': frame_info.function
+                    }
+            
+            return None
+        except Exception:
+            # If we can't determine the caller location, return None
+            return None
+    
+    def get_friendly_error_display(self):
+        """Create a friendly, IDE-like error display."""
+        # ANSI color codes
+        RED = '\033[91m'
+        YELLOW = '\033[93m'
+        RESET = '\033[0m'
+        BOLD = '\033[1m'
+        
+        lines = []
+        
+        # Error header with red X
+        lines.append(f"{RED}❌ FrostDict Key Conflict{RESET}")
+        
+        # Key information
+        lines.append(f"Attempted to reassign existing key: {BOLD}'{self.key}'{RESET}")
+        
+        if self.caller_info:
+            # File location in yellow
+            filename = self.caller_info['filename']
+            lineno = self.caller_info['lineno']
+            function = self.caller_info['function']
+            
+            lines.append(f"{YELLOW}📁 {filename}{RESET}")
+            lines.append("")  # Empty line for spacing
+            
+            # Try to read and display the file context
+            try:
+                with open(filename, 'r', encoding='utf-8') as f:
+                    file_lines = f.readlines()
+                
+                # Calculate the range of lines to show (5 before, problem line, 5 after)
+                start_line = max(1, lineno - 5)
+                end_line = min(len(file_lines), lineno + 5)
+                
+                lines.append("Code context:")
+                
+                for i in range(start_line, end_line + 1):
+                    line_content = file_lines[i - 1].rstrip()  # Remove trailing whitespace
+                    line_num_str = f"{i:4d}"
+                    
+                    if i == lineno:
+                        # Highlight the problematic line in red
+                        lines.append(f"{RED}{line_num_str} | {line_content}{RESET}")
+                    else:
+                        lines.append(f"{line_num_str} | {line_content}")
+                
+            except (IOError, IndexError):
+                lines.append(f"Could not read file context from {filename}:{lineno}")
+            
+            lines.append("")  # Empty line for spacing
+            lines.append(f"💡 Look for line {BOLD}{lineno}{RESET} in {BOLD}{function}(){RESET} in your IDE")
+        
+        return "\n".join(lines)
 
 
 class FrostDict(Mapping[str, Any]):
@@ -58,10 +142,15 @@ class FrostDict(Mapping[str, Any]):
         """
         Set an item by key.
         
-        Raises FrozenKeyError if the key already exists.
+        Prints friendly error message and exits if the key already exists.
         """
         if key in self._data:
-            raise FrozenKeyError(f"Cannot reassign existing key '{key}' in FrostDict")
+            # Create the enhanced error with friendly display
+            error = FrozenKeyError(key)
+            # Print the beautiful, IDE-like error display
+            print(error.get_friendly_error_display())
+            import sys
+            sys.exit(1)
         self._data[key] = value
     
     def __contains__(self, key: str) -> bool:

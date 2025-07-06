@@ -199,7 +199,7 @@ class SQLoopcicle:
                                 time_delta = dt.timedelta(seconds=execution_time)
                                 readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
                                 print(f"-- {time_icon}  Query executed in: {readable_time}")
-                                print("-- ")  # Add blank line for readability
+                                print("-----------------------------------------------------")  # Add blank line for readability
                             except Exception as e:
                                 line = '-' * 80
                                 print(f"-- {error_icon} Error executing SQL query {key}:\n-- Error Start {line}v\n-- \n-- {e}\n-- \n-- ^{line}----------- Error End")

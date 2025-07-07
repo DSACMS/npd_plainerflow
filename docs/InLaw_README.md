@@ -78,6 +78,7 @@ Each InLaw child class must implement:
 ## Available Helper Methods
 
 ### `InLaw.to_gx_dataframe(sql, engine)`
+
 Converts SQL query results to a Great Expectations DataFrame.
 
 ```python
@@ -86,6 +87,7 @@ gx_df = InLaw.to_gx_dataframe(sql, engine)
 ```
 
 ### `InLaw.ansi_green(text)` / `InLaw.ansi_red(text)`
+
 Add ANSI color codes for console output.
 
 ```python
@@ -94,11 +96,12 @@ print(InLaw.ansi_red("❌ FAIL"))
 ```
 
 ### `InLaw.run_all(engine)`
+
 Discovers and runs all InLaw subclasses, returning a summary dictionary.
 
 ## Example Output
 
-```
+```bash
 ===== IN-LAW TESTS =====
 ▶ Running: Ensure table has < 1,000 rows
 ✅ PASS
@@ -192,6 +195,7 @@ See the [Great Expectations documentation](https://docs.greatexpectations.io/) f
 ## Troubleshooting
 
 ### Import Errors
+
 If you get import errors for `sqlalchemy` or `great_expectations`, make sure they're installed:
 
 ```bash
@@ -199,10 +203,83 @@ pip install sqlalchemy pandas great-expectations
 ```
 
 ### No Tests Found
+
 If `InLaw.run_all()` reports "No InLaw test classes found", make sure:
+
 1. Your test classes inherit from `InLaw`
 2. Your test classes are imported/defined in the same namespace
 3. Your test classes implement the required `title` and `run()` method
 
 ### Database Connection Issues
+
 Make sure your SQLAlchemy engine is properly configured and can connect to your database before running tests.
+
+## Great Expectation Tests List
+
+Here is the list of Great Expectation expectation functions.
+For documentation on how to use these please see <https://greatexpectations.io/expectations/>
+
+### Use these frequently
+
+These expectations tend to do well, when the underlying test is actually implemented in SQL, and then the resulting handful of rows
+are subject to these simpler expectations. SQL is far more performant than allowing great expectations to handle millions of rows in a dataframe.
+
+- expect_table_row_count_to_equal
+- expect_table_row_count_to_be_between
+- expect_column_sum_to_be_between
+- expect_column_values_to_be_between
+- expect_column_values_to_be_null
+- expect_column_values_to_not_be_null
+- expect_column_values_to_be_unique
+
+### Use these sometimes
+
+These are often slower, but can solve more complex problems.
+
+- expect_column_values_to_match_regex
+- expect_column_max_to_be_between
+- expect_column_mean_to_be_between
+- expect_column_median_to_be_between
+- expect_column_min_to_be_between
+- expect_column_to_exist
+- expect_column_unique_value_count_to_be_between
+- expect_column_values_to_be_decreasing
+- expect_column_values_to_be_increasing
+- expect_column_values_to_match_regex_list
+- expect_table_column_count_to_be_between
+- expect_table_column_count_to_equal
+- expect_table_row_count_to_equal_other_table
+
+### Use these rarely
+
+These are slow statistical tests that should be used rarely.
+
+- expect_column_distinct_values_to_be_in_set
+- expect_column_distinct_values_to_contain_set
+- expect_column_distinct_values_to_equal_set
+- expect_column_most_common_value_to_be_in_set
+- expect_column_pair_cramers_phi_value_to_be_less_than
+- expect_column_pair_values_a_to_be_greater_than_b
+- expect_column_pair_values_to_be_equal
+- expect_column_value_lengths_to_be_between
+- expect_column_value_lengths_to_equal
+- expect_column_values_to_be_dateutil_parseable
+- expect_column_values_to_be_in_set
+- expect_column_values_to_be_in_type_list
+- expect_column_values_to_be_json_parseable
+- expect_column_values_to_be_of_type
+- expect_column_values_to_match_like_pattern_list
+- expect_column_values_to_match_like_pattern
+- expect_column_values_to_match_strftime_format
+- expect_column_values_to_not_be_in_set
+- expect_column_values_to_not_match_like_pattern_list
+- expect_column_values_to_not_match_like_pattern
+- expect_column_values_to_not_match_regex_list
+- expect_column_values_to_not_match_regex
+- expect_compound_columns_to_be_unique
+- expect_multicolumn_sum_to_equal
+- expect_multicolumn_values_to_be_unique
+- expect_query_results_to_match_comparison
+- expect_select_column_values_to_be_unique_within_record
+- expect_table_columns_to_match_ordered_list
+- expect_table_columns_to_match_set

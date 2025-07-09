@@ -25,6 +25,36 @@ class SQLoopcicle:
     """
     
     @staticmethod
+    def _beep(times: int = 1, interval: float = 0.15) -> None:
+        """
+        Emit an ASCII bell (`\a`) `times` times in quick succession.
+
+        Parameters
+        ----------
+        times : int
+            How many beeps to play.  Default is 1.
+        interval : float
+            Seconds to wait *between* beeps (and before final exit).  
+            Default is 0.15 s — tweak to taste.
+
+        Notes
+        -----
+        - Adds a short pause *before* the first beep and *after* the last*
+        so the terminal has time to register the sound.
+        - Uses `flush=True` to push the bell through Python’s output buffer
+        immediately.
+        """
+        # Short settle-time before the first beep
+        time.sleep(0.1)
+
+        for _ in range(times):
+            print('\a', end='', flush=True)  # ASCII BEL
+            time.sleep(interval)
+
+        # Let the last beep finish before the program exits
+        time.sleep(0.1)
+
+    @staticmethod
     def get_sql_type_icon(sql_string: str, *, is_plain_text: bool = False) -> str:
         """
         Detect the type of SQL statement and return the appropriate icon.
@@ -198,14 +228,17 @@ class SQLoopcicle:
                                 execution_time = end_time - start_time
                                 time_delta = dt.timedelta(seconds=execution_time)
                                 readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
+                                SQLoopcicle._beep(1)
                                 print(f"-- {time_icon}  Query executed in: {readable_time}")
                                 print("-----------------------------------------------------")  # Add blank line for readability
                             except Exception as e:
                                 line = '-' * 80
+                                SQLoopcicle._beep(5)
                                 print(f"-- {error_icon} Error executing SQL query {key}:\n-- Error Start {line}v\n-- \n-- {e}\n-- \n-- ^{line}----------- Error End")
                                 print(f"-- {stop_icon} SQL loop terminated due to error")
                                 return
             except Exception as e:
+                SQLoopcicle._beep(5)
                 print(f"-- {error_icon} Database connection or general error:\n-- Error---\n-- \n-- {e}\n-- ---")
                 print(f"-- {stop_icon} SQL loop terminated due to error")
                 return
@@ -218,6 +251,6 @@ class SQLoopcicle:
                 print(f"{sql_string}\n")
         
         # Print end message
-        print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====")
+        print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====\a\a")
         if is_just_print:
             print(f"-- {warning_icon} ===== I AM NOT RUNNING SQL =====")

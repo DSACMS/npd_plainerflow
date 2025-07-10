@@ -114,7 +114,8 @@ class SQLoopcicle:
         is_just_print: bool = False,
         is_display_select: bool = True,
         select_display_rows: int = 50,
-        is_plain_text_print: bool = False
+        is_plain_text_print: bool = False,
+        is_do_beep: bool = True
     ) -> None:
         """
         Execute SQL statements from a dictionary in order.
@@ -228,12 +229,14 @@ class SQLoopcicle:
                                 execution_time = end_time - start_time
                                 time_delta = dt.timedelta(seconds=execution_time)
                                 readable_time = human_readable.precise_delta(time_delta, minimum_unit="seconds")
-                                SQLoopcicle._beep(1)
+                                if(is_do_beep): 
+                                    SQLoopcicle._beep(1)
                                 print(f"-- {time_icon}  Query executed in: {readable_time}")
                                 print("-----------------------------------------------------")  # Add blank line for readability
                             except Exception as e:
                                 line = '-' * 80
-                                SQLoopcicle._beep(5)
+                                if(is_do_beep): 
+                                    SQLoopcicle._beep(5)
                                 print(f"-- {error_icon} Error executing SQL query {key}:\n-- Error Start {line}v\n-- \n-- {e}\n-- \n-- ^{line}----------- Error End")
                                 print(f"-- {stop_icon} SQL loop terminated due to error")
                                 return
@@ -254,3 +257,10 @@ class SQLoopcicle:
         print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====\a\a")
         if is_just_print:
             print(f"-- {warning_icon} ===== I AM NOT RUNNING SQL =====")
+        else:
+             
+            if(is_do_beep):
+                # We can learn that this pattern means the script is done. 
+                SQLoopcicle._beep(2)
+                time.sleep(2)
+                SQLoopcicle._beep(2, interval=1)        

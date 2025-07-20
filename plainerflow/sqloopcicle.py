@@ -4,6 +4,9 @@ SQLoopcicle - A single-purpose utility for looping over SQL statements.
 Provides a simple loop-and-run mechanism for executing SQL statements from a dictionary
 with support for both actual execution and dry-run mode with clear console output.
 Built for clarity, testability, and minimal abstraction.
+
+TODO: When this loops over the SQL, to the left of the title of each query it should print 8 of 10 so that you can tell
+how much it has left to do. 
 """
 
 from typing import Dict, Union, Mapping
@@ -177,12 +180,15 @@ class SQLoopcicle:
         
         # Single loop: print and execute each SQL statement
         if not is_just_print and sql_dict:
+            total_queries = len(sql_dict)
+            current_query = 0
             try:
                 with engine.connect() as conn:
                     for key, sql_string in sql_dict.items():
+                        current_query += 1
                         # Print the SQL statement with appropriate icon
                         icon = SQLoopcicle.get_sql_type_icon(sql_string, is_plain_text=is_plain_text_print)
-                        print(f"-- {icon} {key}:")
+                        print(f"-- {icon} ({current_query} of {total_queries}) {key}:")
                         print(f"{sql_string}\n")
                         
                         sql_upper = sql_string.strip().upper()
@@ -247,10 +253,13 @@ class SQLoopcicle:
                 return
         else:
             # Dry-run mode: just print the SQL statements
+            total_queries = len(sql_dict)
+            current_query = 0
             for key, sql_string in sql_dict.items():
+                current_query += 1
                 # Print the SQL statement with appropriate icon
                 icon = SQLoopcicle.get_sql_type_icon(sql_string, is_plain_text=is_plain_text_print)
-                print(f"-- {icon} {key}:")
+                print(f"-- {icon} ({current_query} of {total_queries}) {key}:")
                 print(f"{sql_string}\n")
         
         # Print end message
@@ -263,4 +272,4 @@ class SQLoopcicle:
                 # We can learn that this pattern means the script is done. 
                 SQLoopcicle._beep(2)
                 time.sleep(2)
-                SQLoopcicle._beep(2, interval=1)        
+                SQLoopcicle._beep(2, interval=1)

@@ -1,0 +1,36 @@
+{
+  "name": "npd_plainerflow",
+  "description": "A Python package for plain flow operations with SQLAlchemy integration.",
+  "permissions": {
+    "licenses": [
+      {
+        "name": "CC0-1.0",
+        "URL": "https://raw.githubusercontent.com/DSACMS/npd_plainerflow/refs/heads/main/LICENSE"
+      }
+    ],
+    "usageType": "openSource",
+    "exemptionText": ""
+  },
+  "repositoryURL": "https://github.com/DSACMS/npd_plainerflow",
+  "repositoryVisibility": "public",
+  "laborHours": 5022.406,
+  "reuseFrequency": {
+    "forks": 0,
+    "clones": 9
+  },
+  "maintenance": "none",
+  "contractNumber": "none",
+  "tags": [
+    "python",
+    "data",
+    "health"
+  ],
+  "contact": {
+    "email": "opensource@cms.hhs.gov",
+    "name": ""
+  },
+  "feedbackMechanisms": [
+    "https://github.com/DSACMS/npd_plainerflow/issues"
+  ],
+  "AIUseCaseInventory": false
+}

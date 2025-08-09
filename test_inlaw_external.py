@@ -2,7 +2,7 @@
 Example external InLaw test file to demonstrate dynamic import functionality.
 """
 
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 
 class ExternalInLawTest(InLaw):

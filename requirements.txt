@@ -1,5 +1,20 @@
+# Development dependencies
+pytest>=6.0
+pytest-cov
+black
+flake8
+mypy
+twine
+wheel
+build
+testcontainers
+great-expectations
+human_readable
+
+# Base requirements
 iniconfig==2.1.0
 packaging==25.0
 pluggy==1.6.0
 Pygments==2.19.2
-pytest==8.4.1
+sqlalchemy
+pandas

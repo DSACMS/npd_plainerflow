@@ -149,8 +149,7 @@ class FrostDict(Mapping[str, Any]):
             error = FrozenKeyError(key)
             # Print the beautiful, IDE-like error display
             print(error.get_friendly_error_display())
-            import sys
-            sys.exit(1)
+            raise error
         self._data[key] = value
     
     def __contains__(self, key: str) -> bool:

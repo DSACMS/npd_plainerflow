@@ -222,7 +222,7 @@ class SQLoopcicle:
                             except Exception as e:
                                 print(f"-- {error_icon} Error executing SELECT query {key}: {e}")
                                 print(f"-- {stop_icon} SQL loop terminated due to error")
-                                return
+                                raise e
                         else:
                             # Execute non-SELECT queries or when display is disabled
                             try:
@@ -245,12 +245,12 @@ class SQLoopcicle:
                                     SQLoopcicle._beep(5)
                                 print(f"-- {error_icon} Error executing SQL query {key}:\n-- Error Start {line}v\n-- \n-- {e}\n-- \n-- ^{line}----------- Error End")
                                 print(f"-- {stop_icon} SQL loop terminated due to error")
-                                return
+                                raise e
             except Exception as e:
                 SQLoopcicle._beep(5)
                 print(f"-- {error_icon} Database connection or general error:\n-- Error---\n-- \n-- {e}\n-- ---")
                 print(f"-- {stop_icon} SQL loop terminated due to error")
-                return
+                raise e
         else:
             # Dry-run mode: just print the SQL statements
             total_queries = len(sql_dict)

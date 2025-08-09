@@ -2,7 +2,7 @@
 Test file 1 in test directory.
 """
 
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 
 class DirectoryTest1(InLaw):

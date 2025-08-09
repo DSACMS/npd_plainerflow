@@ -1,5 +1,5 @@
 """
-plainerflow - A Python package for plain flow operations
+npd_plainerflow - A Python package for plain flow operations
 """
 
 import warnings
@@ -26,7 +26,7 @@ __author__ = "Fred Trotter"
 __email__ = "fred.trotter@gmail.com"
 
 # Import all main classes/functions here so they're available when someone does:
-# import plainerflow
+# import npd_plainerflow
 
 from .credential_finder import CredentialFinder
 from .inlaw import InLaw

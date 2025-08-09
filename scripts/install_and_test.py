@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script to install plainerflow package and test basic functionality
+Script to install npd_plainerflow package and test basic functionality
 """
 import sys
 import subprocess
@@ -24,14 +24,14 @@ def run_command(cmd, description):
 
 
 def check_import():
-    """Test importing plainerflow"""
+    """Test importing npd_plainerflow"""
     print("\nTesting plainerflow import...")
     try:
-        import plainerflow
-        print(f"✓ Successfully imported plainerflow version {plainerflow.__version__}")
+        import npd_plainerflow
+        print(f"✓ Successfully imported npd_plainerflow version {npd_plainerflow.__version__}")
         return True
     except ImportError as e:
-        print(f"✗ Failed to import plainerflow: {e}")
+        print(f"✗ Failed to import npd_plainerflow: {e}")
         return False
 
 
@@ -49,15 +49,15 @@ def check_sqlalchemy():
 
 def main():
     """Main function"""
-    print("=== plainerflow Installation and Test Script ===")
+    print("=== npd_plainerflow Installation and Test Script ===")
     
     # Check if we're in the right directory
-    if not os.path.exists("plainerflow/__init__.py"):
-        print("✗ Error: This script should be run from the plainerflow project root directory")
+    if not os.path.exists("npd_plainerflow/__init__.py"):
+        print("✗ Error: This script should be run from the npd_plainerflow project root directory")
         sys.exit(1)
     
     # Install in development mode
-    if not run_command("pip install -e .", "Installing plainerflow in development mode"):
+    if not run_command("pip install -e .", "Installing npd_plainerflow in development mode"):
         sys.exit(1)
     
     # Test imports
@@ -74,7 +74,7 @@ def main():
         print("\n! Tests failed or pytest not available")
     
     print("\n=== Installation and testing completed ===")
-    print("You can now use: import plainerflow")
+    print("You can now use: import npd_plainerflow")
 
 
 if __name__ == "__main__":

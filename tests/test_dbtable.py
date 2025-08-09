@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String
 from sqlalchemy.orm import DeclarativeBase
 
-from plainerflow.dbtable import (
+from npd_plainerflow.dbtable import (
     DBTable, 
     DBTableError, 
     DBTableValidationError, 
@@ -334,8 +334,8 @@ class TestDBTableSQLAlchemyIntegration:
         table = DBTable(database='testdb', table='users')
         
         # Mock the reflection since we can't easily test with real schema
-        with patch('plainerflow.dbtable.Table') as mock_table, \
-             patch('plainerflow.dbtable.MetaData') as mock_metadata:
+        with patch('npd_plainerflow.dbtable.Table') as mock_table, \
+             patch('npd_plainerflow.dbtable.MetaData') as mock_metadata:
             
             mock_reflected_table = Mock()
             mock_table.return_value = mock_reflected_table
@@ -358,8 +358,8 @@ class TestDBTableSQLAlchemyIntegration:
         """Test ORM creation with schema."""
         table = DBTable(database='mydb', schema='public', table='users')
         
-        with patch('plainerflow.dbtable.Table') as mock_table, \
-             patch('plainerflow.dbtable.MetaData') as mock_metadata:
+        with patch('npd_plainerflow.dbtable.Table') as mock_table, \
+             patch('npd_plainerflow.dbtable.MetaData') as mock_metadata:
             
             mock_reflected_table = Mock()
             mock_table.return_value = mock_reflected_table
@@ -378,8 +378,8 @@ class TestDBTableSQLAlchemyIntegration:
         """Test ORM creation with full hierarchy."""
         table = DBTable(catalog='main', database='mydb', schema='public', table='users')
         
-        with patch('plainerflow.dbtable.Table') as mock_table, \
-             patch('plainerflow.dbtable.MetaData') as mock_metadata:
+        with patch('npd_plainerflow.dbtable.Table') as mock_table, \
+             patch('npd_plainerflow.dbtable.MetaData') as mock_metadata:
             
             mock_reflected_table = Mock()
             mock_table.return_value = mock_reflected_table
@@ -398,8 +398,8 @@ class TestDBTableSQLAlchemyIntegration:
         """Test ORM creation with custom class name."""
         table = DBTable(database='testdb', table='users')
         
-        with patch('plainerflow.dbtable.Table') as mock_table, \
-             patch('plainerflow.dbtable.MetaData') as mock_metadata:
+        with patch('npd_plainerflow.dbtable.Table') as mock_table, \
+             patch('npd_plainerflow.dbtable.MetaData') as mock_metadata:
             
             mock_reflected_table = Mock()
             mock_table.return_value = mock_reflected_table
@@ -412,8 +412,8 @@ class TestDBTableSQLAlchemyIntegration:
         """Test ORM creation with view."""
         table = DBTable(database='mydb', view='user_view')
         
-        with patch('plainerflow.dbtable.Table') as mock_table, \
-             patch('plainerflow.dbtable.MetaData') as mock_metadata:
+        with patch('npd_plainerflow.dbtable.Table') as mock_table, \
+             patch('npd_plainerflow.dbtable.MetaData') as mock_metadata:
             
             mock_reflected_table = Mock()
             mock_table.return_value = mock_reflected_table

@@ -9,10 +9,10 @@ and how it gracefully falls back through different connection methods.
 import sys
 from pathlib import Path
 
-# Add the parent directory to the path so we can import plainerflow
+# Add the parent directory to the path so we can import npd_plainerflow
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from plainerflow import CredentialFinder
+from npd_plainerflow import CredentialFinder
 
 
 def example_basic_usage():
@@ -79,7 +79,7 @@ def example_custom_sqlite():
         # Insert project data
         conn.execute(text("""
             INSERT OR REPLACE INTO projects (id, name, status) 
-            VALUES (1, 'PlainerFlow', 'development')
+            VALUES (1, 'npd_plainerflow', 'development')
         """))
         
         # Query projects
@@ -110,7 +110,8 @@ def example_env_file_simulation():
         from sqlalchemy import text
         result = conn.execute(text("SELECT 'fallback working' as message"))
         message = result.fetchone()
-        print(f"Test message: {message[0]}")
+        if message:
+            print(f"Test message: {message[0]}")
     
     print("✓ .env file missing example completed\n")
 
@@ -132,7 +133,7 @@ def example_verbose_vs_quiet():
 
 def main():
     """Run all examples."""
-    print("PlainerFlow CredentialFinder Usage Examples\n")
+    print("npd_plainerflow CredentialFinder Usage Examples\n")
     print("=" * 50)
     
     try:

@@ -4,7 +4,7 @@ Tests for the InLaw Great Expectations wrapper.
 
 import pytest
 import sqlalchemy
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 
 class TestInLawBasicPass(InLaw):

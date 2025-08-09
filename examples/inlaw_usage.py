@@ -5,7 +5,7 @@ This demonstrates how to create custom validation tests using the InLaw framewor
 """
 
 import sqlalchemy
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 
 # Example 1: Row count validation (< 100 rows) - Most common pattern

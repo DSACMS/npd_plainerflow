@@ -3,7 +3,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "plainerflow"
+name = "npd_plainerflow"
 dynamic = ["version"]
 description = "A Python package for plain flow operations"
 readme = "README.md"
@@ -26,6 +26,7 @@ classifiers = [
 ]
 dependencies = [
     "sqlalchemy>=1.4.0",
+    "human_readable",
 ]
 
 [project.optional-dependencies]
@@ -41,16 +42,16 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ftrotter/plainerflow"
-Repository = "https://github.com/ftrotter/plainerflow"
-Issues = "https://github.com/ftrotter/plainerflow/issues"
+Homepage = "https://github.com/DSACMS/npd_Puffin"
+Repository = "https://github.com/DSACMS/npd_Puffin"
+Issues = "https://github.com/DSACMS/npd_Puffin/issues"
 
 [tool.setuptools.dynamic]
-version = {attr = "plainerflow.__version__"}
+version = {attr = "npd_plainerflow.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["plainerflow*"]
+include = ["npd_plainerflow*"]
 
 [tool.black]
 line-length = 88

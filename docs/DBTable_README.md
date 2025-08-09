@@ -13,10 +13,10 @@ The `DBTable` class provides a robust, validated way to represent database table
 
 ## Installation
 
-The DBTable class is part of the plainerflow package:
+The DBTable class is part of the npd_plainerflow package:
 
 ```python
-from plainerflow import DBTable
+from npd_plainerflow import DBTable
 ```
 
 ## Basic Usage
@@ -192,7 +192,7 @@ repr(table)  # Output: "DBTable(database='mydb', table='users')"
 The class provides specific exception types:
 
 ```python
-from plainerflow import DBTableValidationError, DBTableHierarchyError
+from npd_plainerflow import DBTableValidationError, DBTableHierarchyError
 
 try:
     table = DBTable(database='invalid name', table='users')

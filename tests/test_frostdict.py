@@ -6,8 +6,8 @@ dictionary-like operations, and integration with SQLoopcicle.
 """
 
 import pytest
-from plainerflow.frostdict import FrostDict, FrozenKeyError
-from plainerflow.sqloopcicle import SQLoopcicle
+from npd_plainerflow.frostdict import FrostDict, FrozenKeyError
+from npd_plainerflow.sqloopcicle import SQLoopcicle
 from sqlalchemy import create_engine
 
 

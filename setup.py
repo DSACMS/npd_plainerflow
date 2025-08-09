@@ -8,21 +8,21 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 # Read version from __init__.py
 def get_version():
-    with open(os.path.join(this_directory, 'plainerflow', '__init__.py'), 'r') as f:
+    with open(os.path.join(this_directory, 'npd_plainerflow', '__init__.py'), 'r') as f:
         for line in f:
             if line.startswith('__version__'):
                 return line.split('=')[1].strip().strip('"').strip("'")
     return "0.1.0"
 
 setup(
-    name="plainerflow",
+    name="npd_plainerflow",
     version=get_version(),
     author="Your Name",
     author_email="your.email@example.com",
     description="A Python package for plain flow operations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ftrotter/plainerflow",
+    url="https://github.com/DSACMS/npd_Puffin",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -39,6 +39,7 @@ setup(
     python_requires=">=3.7",
     install_requires=[
         "sqlalchemy>=1.4.0",
+        "human_readable",
     ],
     extras_require={
         "dev": [

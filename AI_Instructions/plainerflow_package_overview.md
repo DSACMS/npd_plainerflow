@@ -1,15 +1,15 @@
-# plainerflow
+# npd_plainerflow
 
 This is a python package that should be downloaded from PyPI using pip with:
 
 ```bash
-pip install plainerflow
+pip install npd_plainerflow
 ```
 
 Which will result in us being able to simply say:
 
 ```python
-import plainerflow
+import npd_plainerflow
 ```
 
 To get all of the sub-classes we will define later into the namespace.
@@ -18,8 +18,8 @@ However the typical installation environment will not have pip available. So it 
 
 ```python
 import sys
-sys.path.insert(0, "/path/to/the/right/plainerflow/subdirectory")
-import plainerflow
+sys.path.insert(0, "/path/to/the/right/npd_plainerflow/subdirectory")
+import npd_plainerflow
 ```
 
 We will be adding multiple classes to this project later on and many of them will be dependent on sqlalchemy, so let's setup a project wide dependence on sqlalchemy.

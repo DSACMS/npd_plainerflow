@@ -2,7 +2,7 @@
 
 DBTable merges a helpful "print the specific db_name.table_name" helper with a reflected sqlalchemy ORM.
 
-This is a class that is part of the main plainerflow package. It should be available in the namespace after an import plainerflow statement in python.
+This is a class that is part of the main npd_plainerflow package. It should be available in the namespace after an import npd_plainerflow statement in python.
 
 It is acceptable for the class to inherit from SQLAlchemy's DeclarativeBase when an engine is provided, with the corresponding string overrides to ensure that it can resolve to a specific db_name.table_name when included in an f-string that will become SQL, for instance. Also, the DBTable class should function and produce the appropriate __str__ etc values, when there is no corresponding table in the database yet. And the create_child functions should work as well.
 
@@ -136,7 +136,7 @@ def reflect_table_model(
 
 ### Implementation Structure
 
-**File**: `plainerflow/dbtable.py`
+**File**: `npd_plainerflow/dbtable.py`
 
 **Key Components**:
 
@@ -177,7 +177,7 @@ def reflect_table_model(
 
 ### Integration
 
-- Add to `plainerflow/__init__.py` imports
+- Add to `npd_plainerflow/__init__.py` imports
 - Add to `__all__` list
 - Follow existing code style patterns
 

@@ -1,9 +1,9 @@
-# PlainerFlow – **`InLaw` Validation Framework**
+# npd_plainerflow – **`InLaw` Validation Framework**
 
 A lightweight wrapper around **Great Expectations (GX)** that lets you define simple pass/fail
 tests as Python subclasses—no DataDocs, suites, or YAML required.
 
-This is a class that is part of the main plainerflow package. It should be available in the namespace after an import plainerflow statement in python.
+This is a class that is part of the main npd_plainerflow package. It should be available in the namespace after an import npd_plainerflow statement in python.
 
 ---
 
@@ -33,7 +33,7 @@ This is a class that is part of the main plainerflow package. It should be avail
 ## 3. Child Class Template
 
 ```python
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 class InLawExpectFewerThanThousandRows(InLaw):
     title = "Ensure table has < 1,000 rows"

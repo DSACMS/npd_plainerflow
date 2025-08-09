@@ -10,11 +10,11 @@ import sys
 import os
 from pathlib import Path
 
-# Add the parent directory to the path so we can import plainerflow
+# Add the parent directory to the path so we can import npd_plainerflow
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import plainerflow
-from plainerflow import CredentialFinder
+import npd_plainerflow
+from npd_plainerflow import CredentialFinder
 
 
 def test_sqlite_fallback():
@@ -41,7 +41,7 @@ def test_sqlite_override():
     print("Testing SQLite override...")
     
     # Test with custom SQLite file
-    custom_db = "/tmp/test_plainerflow.db"
+    custom_db = "/tmp/test_npd_plainerflow.db"
     engine = CredentialFinder.detect_config(
         sqlite_db_file=custom_db, 
         verbose=True

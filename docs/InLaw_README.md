@@ -18,7 +18,7 @@ Make sure you have the required dependencies installed:
 pip install sqlalchemy pandas great-expectations
 ```
 
-Or install the full plainerflow package:
+Or install the full npd_plainerflow package:
 
 ```bash
 pip install -r requirements.txt
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 ### 1. Import the InLaw class
 
 ```python
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 ```
 
 ### 2. Create a test class
@@ -115,7 +115,7 @@ Summary: 1 passed · 1 failed
 
 ```python
 import sqlalchemy
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 # Define your tests
 class InLawRowCountCheck(InLaw):

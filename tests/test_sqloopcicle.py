@@ -9,7 +9,7 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
 
-from plainerflow.sqloopcicle import SQLoopcicle
+from npd_plainerflow.sqloopcicle import SQLoopcicle
 
 
 class TestSQLoopcicleBasicFunctionality:

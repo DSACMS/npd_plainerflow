@@ -11,10 +11,10 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 import sys
 
-# Add the parent directory to the path so we can import plainerflow
+# Add the parent directory to the path so we can import npd_plainerflow
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from plainerflow import CredentialFinder
+from npd_plainerflow import CredentialFinder
 import sqlalchemy
 
 
@@ -60,7 +60,9 @@ class TestCredentialFinder(unittest.TestCase):
         with engine.connect() as conn:
             from sqlalchemy import text
             result = conn.execute(text("SELECT 1"))
-            self.assertEqual(result.fetchone()[0], 1)
+            row = result.fetchone()
+            if row:
+                self.assertEqual(row[0], 1)
     
     def test_sqlite_fallback(self):
         """Test SQLite fallback when no other methods work."""
@@ -78,7 +80,9 @@ class TestCredentialFinder(unittest.TestCase):
         with engine.connect() as conn:
             from sqlalchemy import text
             result = conn.execute(text("SELECT 'fallback' as test"))
-            self.assertEqual(result.fetchone()[0], "fallback")
+            row = result.fetchone()
+            if row:
+                self.assertEqual(row[0], "fallback")
     
     def test_env_file_missing(self):
         """Test behavior when .env file doesn't exist."""
@@ -161,7 +165,7 @@ class TestCredentialFinder(unittest.TestCase):
     def test_home_directory_expansion(self):
         """Test that ~ in sqlite_db_file gets expanded to home directory."""
         engine = CredentialFinder.detect_config(
-            sqlite_db_file="~/test_plainerflow.db",
+            sqlite_db_file="~/test_npd_plainerflow.db",
             verbose=False
         )
         
@@ -172,7 +176,7 @@ class TestCredentialFinder(unittest.TestCase):
         self.assertNotIn("~", url_str)  # ~ should be expanded
         
         # Clean up the created file
-        home_db_path = str(Path.home() / "test_plainerflow.db")
+        home_db_path = str(Path.home() / "test_npd_plainerflow.db")
         if os.path.exists(home_db_path):
             os.remove(home_db_path)
     

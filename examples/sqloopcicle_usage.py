@@ -7,7 +7,7 @@ with a SQLite database.
 """
 
 from sqlalchemy import create_engine, text
-from plainerflow import SQLoopcicle
+from npd_plainerflow import SQLoopcicle
 
 def main():
     """Demonstrate SQLoopcicle usage."""

@@ -12,10 +12,10 @@ This example demonstrates the key features of DBTable including:
 import sys
 import os
 
-# Add the parent directory to the path so we can import plainerflow
+# Add the parent directory to the path so we can import npd_plainerflow
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from plainerflow import DBTable, DBTableValidationError, DBTableHierarchyError
+from npd_plainerflow import DBTable, DBTableValidationError, DBTableHierarchyError
 
 
 def basic_usage_examples():
@@ -194,7 +194,8 @@ def sqlalchemy_integration_example():
         try:
             orm_class = db_table.to_orm(engine)
             print(f"Generated ORM class: {orm_class.__name__}")
-            print(f"ORM table name: {orm_class.__table__.name}")
+            if hasattr(orm_class, '__table__'):
+                print(f"ORM table name: {orm_class.__table__.name}")
         except Exception as e:
             print(f"ORM creation note: {e}")
             print("(This is expected in the demo - would work with proper table reflection)")

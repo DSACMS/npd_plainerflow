@@ -5,7 +5,7 @@ Here is your request formatted as a proper Markdown document:
 
 A single-purpose utility for looping over a mapping of SQL statements and running them using a SQLAlchemy engine. Built for clarity, testability, and optional dry-run execution.
 
-This is a class that is part of the main plainerflow package. It should be available in the namespace after an import plainerflow statement in python.
+This is a class that is part of the main npd_plainerflow package. It should be available in the namespace after an import npd_plainerflow statement in python.
 
 The frozen dictionary that this will commonly be used with is described in AI_Instructions/FrozenDictionary.md
 
@@ -17,7 +17,7 @@ The class file name should be sqloopcicle.py
 
 - Provide a simple loop-and-run mechanism for executing SQL statements from a dictionary.
 - Support both **actual execution** and **dry-run mode** with clear console output.
-- Minimal, functional abstraction aligned with PlainerFlow’s "no-fluff" philosophy.
+- Minimal, functional abstraction aligned with npd_plainerflow’s "no-fluff" philosophy.
 
 ---
 
@@ -99,8 +99,8 @@ SQLoopcicle.run_sql_loop(
 ## Implementation Plan
 
 ### Files to Create/Modify:
-1. **`plainerflow/sqloopcicle.py`** - Main implementation
-2. **`plainerflow/__init__.py`** - Add SQLoopcicle import/export
+1. **`npd_plainerflow/sqloopcicle.py`** - Main implementation
+2. **`npd_plainerflow/__init__.py`** - Add SQLoopcicle import/export
 3. **`tests/test_sqloopcicle.py`** - Comprehensive test suite
 
 ### Implementation Details:
@@ -110,7 +110,7 @@ SQLoopcicle.run_sql_loop(
 - **Dictionary support**: Accepts any Python `dict[str, str]`
 - **Output formatting**: Exact console messages as specified above
 - **Error handling**: Lets exceptions propagate naturally (no swallowing)
-- **Code style**: Follows existing plainerflow patterns with docstrings and type hints
+- **Code style**: Follows existing npd_plainerflow patterns with docstrings and type hints
 
 ### Test Coverage:
 - Dry-run mode functionality

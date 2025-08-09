@@ -1,4 +1,4 @@
-# plainerflow
+# npd_plainerflow
 
 A Python package for plain flow operations with SQLAlchemy integration.
 
@@ -7,7 +7,7 @@ A Python package for plain flow operations with SQLAlchemy integration.
 ### From PyPI (recommended)
 
 ```bash
-pip install plainerflow
+pip install npd_plainerflow
 ```
 
 ### Manual Installation
@@ -16,13 +16,13 @@ If pip is not available in your environment, you can use the package by adding i
 
 ```python
 import sys
-sys.path.insert(0, "/path/to/the/right/plainerflow/subdirectory")
-import plainerflow
+sys.path.insert(0, "/path/to/the/right/npd_plainerflow/subdirectory")
+import npd_plainerflow
 ```
 
-## Using PlainerFlow
+## Using npd_plainerflow
 
-PlainerFlow provides a set of components designed to work together for data transformation pipelines. See the complete working example in [`pipeline_example.py`](pipeline_example.py) which demonstrates importing CSV data, transforming it using SQL, and validating the results.
+npd_plainerflow provides a set of components designed to work together for data transformation pipelines. See the complete working example in [`pipeline_example.py`](pipeline_example.py) which demonstrates importing CSV data, transforming it using SQL, and validating the results.
 
 ### Complete Pipeline Example
 
@@ -39,7 +39,7 @@ The [`pipeline_example.py`](pipeline_example.py) script shows a full data transf
 
 ```bash
 # Install dependencies
-pip install plainerflow pandas great-expectations testcontainers
+pip install npd_plainerflow pandas great-expectations testcontainers
 
 # Run the complete pipeline
 python pipeline_example.py
@@ -47,7 +47,7 @@ python pipeline_example.py
 
 **Expected output:**
 ```
-=== PlainerFlow Pipeline Example Program ===
+=== npd_plainerflow Pipeline Example Program ===
 Step 1: Connecting to database...
 ✅ Connected to PostgreSQL test container
 
@@ -158,20 +158,20 @@ InLaw.run_all(engine)
 For simpler use cases, you can use individual components:
 
 ```python
-import plainerflow
+import npd_plainerflow
 
 # Just get a database connection
-engine = plainerflow.CredentialFinder.detect_config()
+engine = npd_plainerflow.CredentialFinder.detect_config()
 
 # Define a table reference
-my_table = plainerflow.DBTable(database='mydb', table='users')
+my_table = npd_plainerflow.DBTable(database='mydb', table='users')
 print(f"Table reference: {my_table}")  # Output: mydb.users
 
 # Create frozen configuration
-config = plainerflow.FrostDict({'query': f'SELECT * FROM {my_table}'})
+config = npd_plainerflow.FrostDict({'query': f'SELECT * FROM {my_table}'})
 
 # Execute SQL
-plainerflow.SQLoopcicle.run_sql_loop(config, engine)
+npd_plainerflow.SQLoopcicle.run_sql_loop(config, engine)
 ```
 
 ## Dependencies
@@ -184,8 +184,8 @@ plainerflow.SQLoopcicle.run_sql_loop(config, engine)
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/ftrotter/plainerflow.git
-cd plainerflow
+git clone https://github.com/DSACMS/npd_Puffin.git
+cd npd_plainerflow
 ```
 
 2. Create a virtual environment:

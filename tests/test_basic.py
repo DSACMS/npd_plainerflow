@@ -1,20 +1,20 @@
 """
-Basic tests for plainerflow package
+Basic tests for npd_plainerflow package
 """
 import pytest
 
 
-def test_import_plainerflow():
-    """Test that plainerflow can be imported"""
-    import plainerflow
-    assert plainerflow is not None
+def test_import_npd_plainerflow():
+    """Test that npd_plainerflow can be imported"""
+    import npd_plainerflow
+    assert npd_plainerflow is not None
 
 
 def test_version_exists():
     """Test that version is available"""
-    import plainerflow
-    assert hasattr(plainerflow, '__version__')
-    assert plainerflow.__version__ is not None
+    import npd_plainerflow
+    assert hasattr(npd_plainerflow, '__version__')
+    assert npd_plainerflow.__version__ is not None
 
 
 def test_sqlalchemy_dependency():

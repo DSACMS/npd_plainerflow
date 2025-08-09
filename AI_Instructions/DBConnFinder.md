@@ -1,6 +1,6 @@
-# PlainerFlow – `DBConnFinder`
+# npd_plainerflow – `DBConnFinder`
 
-This is a class that is part of the main plainerflow package. It should be available in the namespace after an import plainerflow statement in python.
+This is a class that is part of the main npd_plainerflow package. It should be available in the namespace after an import npd_plainerflow statement in python.
 
 > A lightweight “connection discovery” utility that inspects the runtime environment in a **priority order** and returns a ready-to-use SQLAlchemy `Engine` (or connection string).  
 > Falls back to a local SQLite DB so the pipeline *always* has something to run against.
@@ -52,7 +52,7 @@ class CredentialFinder:
 | 1 | Spark Session | import pyspark and SparkSession.getActiveSession() returns a session | - Read spark.conf["spark.databricks.jdbc.url"] or build a databricks+connector:// URL.<br>- Return create_engine(...). |
 | 2 | Google Colab Credentials Sheet | import google.colab succeeds and a predefined Drive spreadsheet ID env var exists | - Use Google Drive API + OAuth popup to read a sheet cell containing the DB URL / password.<br>- Assemble SQLAlchemy URL and return engine. This should have a password_worksheet parameter that refers to a worksheet within the current Google Suite users Google Drive account. |
 | 3 | .env Secrets File | File at env_path is present | - python-dotenv loads vars like DB_TYPE, DB_USER, DB_PASS, etc.<br>- Build create_engine(...) accordingly. |
-| 4 | SQLite Fallback | All other methods fail | - Create a local DB at ~/plainerflow_fallback.db (or :memory:).<br>- Return create_engine("sqlite:///~/plainerflow_fallback.db"). |
+| 4 | SQLite Fallback | All other methods fail | - Create a local DB at ~/npd_plainerflow_fallback.db (or :memory:).<br>- Return create_engine("sqlite:///~/npd_plainerflow_fallback.db"). |
 
 
 ## 4. Optional Verbose Output
@@ -63,7 +63,7 @@ When verbose=True, the method prints, e.g.:
 
 or
 
-[CredentialFinder] Falling back to local SQLite database: ~/plainerflow_fallback.db. This should be the default, but an optional named parameter should override this.
+[CredentialFinder] Falling back to local SQLite database: ~/npd_plainerflow_fallback.db. This should be the default, but an optional named parameter should override this.
 IF the sqlite_db_file parameter is used in this way, the sqlite db should be used no matter what else is available.
 
 
@@ -99,8 +99,8 @@ For the naming convention of the .env file, please use the GX_USERNAME, GX_PASSW
 ## 8. Implementation Plan
 
 ### Package Structure
-- Create `plainerflow/credential_finder.py` containing the `CredentialFinder` class
-- Update `plainerflow/__init__.py` to import and expose `CredentialFinder`
+- Create `npd_plainerflow/credential_finder.py` containing the `CredentialFinder` class
+- Update `npd_plainerflow/__init__.py` to import and expose `CredentialFinder`
 - Update `requirements.txt` to include optional dependencies
 
 ### Class Design
@@ -120,7 +120,7 @@ class CredentialFinder:
 
 **Priority 1: SQLite Override**
 - If `sqlite_db_file` parameter is provided, use it immediately (bypassing all other detection)
-- Default to `~/plainerflow_fallback.db` if no custom path specified
+- Default to `~/npd_plainerflow_fallback.db` if no custom path specified
 
 **Priority 2: Spark Session**
 - Try `import pyspark` and check `SparkSession.getActiveSession()`
@@ -141,7 +141,7 @@ class CredentialFinder:
 - Raise RuntimeError if required keys missing
 
 **Priority 5: SQLite Fallback**
-- Create `~/plainerflow_fallback.db`
+- Create `~/npd_plainerflow_fallback.db`
 - Never raises exceptions (unless disk unwritable)
 
 ### Dependencies Strategy
@@ -159,6 +159,6 @@ class CredentialFinder:
 - Graceful fallback to SQLite for all other failures
 
 ### Files to Create/Modify
-- `plainerflow/credential_finder.py` (new)
-- `plainerflow/__init__.py` (update imports)
+- `npd_plainerflow/credential_finder.py` (new)
+- `npd_plainerflow/__init__.py` (update imports)
 - `requirements.txt` (add optional dependencies as comments)

@@ -2,11 +2,11 @@
 
 FrostDict is a frozen dictionary (at the top dictionary level)
 
-This is a class that is part of the main plainerflow package. It should be available in the namespace after an `import plainerflow` statement in python and should not need to be specifically imported.
+This is a class that is part of the main npd_plainerflow package. It should be available in the namespace after an `import npd_plainerflow` statement in python and should not need to be specifically imported.
 
-The files should be called plainerflow/frostdict.py
+The files should be called npd_plainerflow/frostdict.py
 
-This should specifically work with and be tested with the SQL loop classes as described in AI_Instructions/SQLoop.md and implemented in plainerflow/sqloopcicle.py
+This should specifically work with and be tested with the SQL loop classes as described in AI_Instructions/SQLoop.md and implemented in npd_plainerflow/sqloopcicle.py
 
 ## 1. Scope & Goals
 

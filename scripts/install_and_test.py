@@ -25,7 +25,7 @@ def run_command(cmd, description):
 
 def check_import():
     """Test importing npd_plainerflow"""
-    print("\nTesting plainerflow import...")
+    print("\nTesting npd_plainerflow import...")
     try:
         import npd_plainerflow
         print(f"✓ Successfully imported npd_plainerflow version {npd_plainerflow.__version__}")

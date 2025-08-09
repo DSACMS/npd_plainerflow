@@ -1,12 +1,12 @@
-# plainerflow Package Setup Complete
+# npd_plainerflow Package Setup Complete
 
-Your Python package `plainerflow` has been successfully set up with all the necessary infrastructure for PyPI distribution and development.
+Your Python package `npd_plainerflow` has been successfully set up with all the necessary infrastructure for PyPI distribution and development.
 
 ## Package Structure Created
 
 ```
-plainerflow/
-├── plainerflow/                 # Main package directory
+npd_plainerflow/
+├── npd_plainerflow/                 # Main package directory
 │   └── __init__.py             # Package initialization with version info
 ├── tests/                      # Test directory
 │   ├── __init__.py
@@ -16,8 +16,8 @@ plainerflow/
 ├── scripts/                    # Utility scripts
 │   └── install_and_test.py    # Installation and testing script
 ├── dist/                       # Built packages (created after build)
-│   ├── plainerflow-0.1.0-py3-none-any.whl
-│   └── plainerflow-0.1.0.tar.gz
+│   ├── npd_plainerflow-0.1.0-py3-none-any.whl
+│   └── npd_plainerflow-0.1.0.tar.gz
 ├── setup.py                    # Traditional setup script
 ├── pyproject.toml             # Modern Python packaging configuration
 ├── requirements.txt           # Runtime dependencies
@@ -43,21 +43,21 @@ plainerflow/
 
 ### Method 1: Via pip (when available)
 ```bash
-pip install plainerflow
+pip install npd_plainerflow
 ```
 
 ### Method 2: Manual path setup (for restricted environments)
 ```python
 import sys
-sys.path.insert(0, "/path/to/plainerflow/directory")
-import plainerflow
+sys.path.insert(0, "/path/to/npd_plainerflow/directory")
+import npd_plainerflow
 ```
 
 ## Usage
 
 ```python
-import plainerflow
-print(plainerflow.__version__)  # Shows: 0.1.0
+import npd_plainerflow
+print(npd_plainerflow.__version__)  # Shows: 0.1.0
 
 # SQLAlchemy is automatically available as a dependency
 import sqlalchemy
@@ -73,10 +73,10 @@ pip install -e ".[dev]"
 python -m pytest
 
 # Format code
-black plainerflow
+black npd_plainerflow
 
 # Lint code
-flake8 plainerflow && mypy plainerflow
+flake8 npd_plainerflow && mypy npd_plainerflow
 
 # Build package
 python -m build
@@ -100,17 +100,17 @@ python -m twine upload dist/*
 
 ## Next Steps
 
-1. **Update package metadata**: Edit `plainerflow/__init__.py`, `setup.py`, and `pyproject.toml` to add your name and email
-2. **Add your classes**: Import new classes in `plainerflow/__init__.py` to make them available via `import plainerflow`
+1. **Update package metadata**: Edit `npd_plainerflow/__init__.py`, `setup.py`, and `pyproject.toml` to add your name and email
+2. **Add your classes**: Import new classes in `npd_plainerflow/__init__.py` to make them available via `import npd_plainerflow`
 3. **Configure PyPI credentials**: Set up your PyPI account and API tokens for uploading
 4. **Add more tests**: Expand the test suite as you add functionality
 
 ## Adding New Classes
 
-When you add new modules to the plainerflow package:
+When you add new modules to the npd_plainerflow package:
 
-1. Create your module file: `plainerflow/your_module.py`
-2. Import it in `plainerflow/__init__.py`:
+1. Create your module file: `npd_plainerflow/your_module.py`
+2. Import it in `npd_plainerflow/__init__.py`:
    ```python
    from .your_module import YourClass
    __all__ = ["__version__", "YourClass"]

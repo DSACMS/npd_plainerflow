@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-PlainerFlow Pipeline Example
+npd_plainerflow Pipeline Example
 
-This script demonstrates a complete data transformation pipeline using PlainerFlow components:
+This script demonstrates a complete data transformation pipeline using npd_plainerflow components:
 - CredentialFinder for database connections
 - DBTable for table references
 - FrostDict for SQL configuration
 - SQLoopcicle for SQL execution
 - InLaw for data validation
 
-Run this script to see PlainerFlow in action with the example CSV data.
+Run this script to see npd_plainerflow in action with the example CSV data.
 """
 
-import plainerflow
-from plainerflow import CredentialFinder, DBTable, FrostDict, SQLoopcicle, InLaw
+import npd_plainerflow
+from npd_plainerflow import CredentialFinder, DBTable, FrostDict, SQLoopcicle, InLaw
 import pandas as pd
 import sqlalchemy
 from pathlib import Path
 
 def main():
-    print("=== PlainerFlow Pipeline Example Program ===")
+    print("=== npd_plainerflow Pipeline Example Program ===")
     print("=" * 50)
     
     # Step 1: Get database connection using PostgreSQL testcontainer
@@ -160,51 +160,49 @@ def main():
         
         @staticmethod
         def run(engine):
-            sql = f"""
-            SELECT 
-                (SELECT COUNT(*) FROM {customers_DBTable}) as customer_count,
-                (SELECT COUNT(*) FROM {customer_summary_DBTable}) as summary_count
-            """
-            validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
+            # Get the expected row count from the customers table
+            with engine.connect() as conn:
+                expected_rows = conn.execute(sqlalchemy.text(f"SELECT COUNT(*) FROM {customers_DBTable}")).scalar_one()
+    
+            # Use Great Expectations to check the row count of the summary table
+            validation_gx_df = InLaw.sql_to_gx_df(sql=f"SELECT * FROM {customer_summary_DBTable}", engine=engine)
+            result = validation_gx_df.expect_table_row_count_to_equal(value=expected_rows)
             
-            customer_count = validation_gx_df.iloc[0]['customer_count']
-            summary_count = validation_gx_df.iloc[0]['summary_count']
-            
-            if customer_count == summary_count:
+            if result.success:
                 return True
-            return f"Row count mismatch: {customer_count} customers vs {summary_count} summary rows"
+            
+            observed_count = result.result.get("observed_value", "N/A")
+            return f"Row count mismatch: expected {expected_rows} rows, but found {observed_count}"
     
     class ValidateNoNullCustomerNames(InLaw):
         title = "Customer summary should have no null names"
         
         @staticmethod
         def run(engine):
-            sql = f"SELECT COUNT(*) as null_count FROM {customer_summary_DBTable} WHERE full_name IS NULL"
+            sql = f"SELECT full_name FROM {customer_summary_DBTable}"
             validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
+            result = validation_gx_df.expect_column_values_to_not_be_null(column='full_name')
             
-            null_count = validation_gx_df.iloc[0]['null_count']
-            
-            if null_count == 0:
+            if result.success:
                 return True
-            return f"Found {null_count} null names in customer summary"
+            
+            unexpected_count = result.result.get("unexpected_count", "N/A")
+            return f"Found {unexpected_count} null names in customer summary"
     
     class ValidateTotalSpentIsPositive(InLaw):
         title = "Active customers with orders should have positive total_spent"
         
         @staticmethod
         def run(engine):
-            sql = f"""
-            SELECT COUNT(*) as invalid_count 
-            FROM {customer_summary_DBTable} 
-            WHERE total_orders > 0 AND total_spent <= 0
-            """
+            sql = f"SELECT total_spent FROM {customer_summary_DBTable} WHERE total_orders > 0"
             validation_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
+            result = validation_gx_df.expect_column_values_to_be_greater_than(column='total_spent', value=0)
             
-            invalid_count = validation_gx_df.iloc[0]['invalid_count']
-            
-            if invalid_count == 0:
+            if result.success:
                 return True
-            return f"Found {invalid_count} customers with orders but non-positive spending"
+                
+            unexpected_count = result.result.get("unexpected_count", "N/A")
+            return f"Found {unexpected_count} customers with orders but non-positive spending"
     
     # Step 7: Run validation tests using InLaw
     print("\nStep 7: Running data validation tests...")
@@ -226,5 +224,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Pipeline failed with error: {e}")
         print("\nMake sure you have installed the required dependencies:")
-        print("pip install plainerflow pandas great-expectations")
+        print("pip install npd_plainerflow pandas great-expectations")
         raise

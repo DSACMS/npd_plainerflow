@@ -2,6 +2,6 @@ include README.md
 include LICENSE
 include requirements.txt
 include pyproject.toml
-recursive-include plainerflow *.py
+recursive-include npd_plainerflow *.py
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

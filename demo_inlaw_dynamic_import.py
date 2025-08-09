@@ -3,7 +3,7 @@ Demonstration of InLaw dynamic import functionality.
 """
 
 import sqlalchemy
-from plainerflow import InLaw
+from npd_plainerflow import InLaw
 
 
 def main():

@@ -109,8 +109,8 @@ class CredentialFinder:
         """
         try:
             # Check if pyspark is available
-            import pyspark
-            from pyspark.sql import SparkSession
+            import pyspark # type: ignore
+            from pyspark.sql import SparkSession # type: ignore
         except ImportError:
             return None  # Spark not available, continue to next priority
         
@@ -155,16 +155,16 @@ class CredentialFinder:
         """
         try:
             # Check if we're in Google Colab
-            import google.colab
+            import google.colab # type: ignore
         except ImportError:
             return None  # Not in Colab, continue to next priority
         
         try:
             # Import required Google API dependencies
-            import gspread
+            import gspread # type: ignore
             import pandas as pd
-            from google.auth import default
-            from google.colab import auth
+            from google.auth import default # type: ignore
+            from google.colab import auth # type: ignore
         except ImportError as e:
             raise RuntimeError(
                 f"Google Colab detected but required dependencies missing: {str(e)}. "
@@ -215,7 +215,7 @@ class CredentialFinder:
             Whether to print verbose output.
         """
         try:
-            from testcontainers.postgres import PostgreSqlContainer
+            from testcontainers.postgres import PostgreSqlContainer # type: ignore
         except ImportError:
             # Fall back to SQLite if testcontainers is not available
             if verbose:
@@ -319,7 +319,19 @@ class CredentialFinder:
         if verbose:
             print(f"[CredentialFinder] Using .env file credentials from {env_path}.")
         
-        return create_engine(sql_url)
+        try:
+            engine = create_engine(sql_url)
+            # Test the connection
+            with engine.connect() as connection:
+                if verbose:
+                    print("[CredentialFinder] Database connection successful.")
+            return engine
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to connect to the database using credentials from {env_path}. "
+                f"Please check your .env file and ensure the database is running. "
+                f"Original error: {e}"
+            )
     
     @staticmethod
     def _create_sqlite_engine(db_path: str, verbose: bool, is_fallback: bool = False) -> sqlalchemy.engine.Engine:

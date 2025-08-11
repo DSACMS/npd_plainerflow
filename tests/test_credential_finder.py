@@ -254,26 +254,19 @@ class TestLoadConfigFromEnv(unittest.TestCase):
     def test_load_single_file(self):
         """Test loading a single, valid .env file."""
         settings = CredentialFinder.load_config_from_env([self.env_file1_path])
-        self.assertEqual(settings['DB_HOST'], "localhost")
-        self.assertEqual(settings['DB_PORT'], "5432")
+        from dynaconf import Dynaconf
+        self.assertIsInstance(settings, Dynaconf)
+        self.assertEqual(settings.DB_HOST, "localhost")
+        self.assertEqual(settings.DB_PORT, "5432")
 
     def test_load_multiple_files_override(self):
         """Test that later files override earlier ones when duplicates are allowed."""
         settings = CredentialFinder.load_config_from_env(
-            [self.env_file1_path, self.env_file2_path], forbid_duplicates=False
+            [self.env_file1_path, self.env_file2_path]
         )
-        self.assertEqual(settings['DB_HOST'], "remotehost")
-        self.assertEqual(settings['DB_USER'], "admin")
-        self.assertEqual(settings['COMMON_VAR'], "file2")
-
-    def test_forbid_duplicates_raises_error(self):
-        """Test that a RuntimeError is raised when forbid_duplicates=True and keys conflict."""
-        with self.assertRaises(RuntimeError) as context:
-            CredentialFinder.load_config_from_env(
-                [self.env_file1_path, self.env_file2_path], forbid_duplicates=True
-            )
-        self.assertIn("Duplicate configuration variable", str(context.exception))
-        self.assertIn("'DB_USER'", str(context.exception))
+        self.assertEqual(settings.DB_HOST, "remotehost")
+        self.assertEqual(settings.DB_USER, "admin")
+        self.assertEqual(settings.COMMON_VAR, "file2")
 
     def test_missing_file_raises_error(self):
         """Test that a RuntimeError is raised if a configuration file is missing."""

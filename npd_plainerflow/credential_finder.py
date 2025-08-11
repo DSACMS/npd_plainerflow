@@ -366,17 +366,13 @@ class CredentialFinder:
         
         return create_engine(sql_url)
     
-    #TODO I have added this new function load_env which should allow any two .env files to be loaded, merged and returned as a settings monad. 
-    # We need to write a test to make sure that it works, and that forbid_duplicates works as expected. 
-
     @staticmethod
-    def load_config_from_env(config_files: List[Union[str, Path]], *, forbid_duplicates: bool = True) -> dict:
+    def load_config_from_env(config_files: List[Union[str, Path]]) -> Dynaconf:
         """
-        Create a dictionary from an explicit, ordered list of config files.
+        Create a Dynaconf settings object from an explicit, ordered list of .env files.
         * Only accepts a list.
         * Crashes with a clear error if any file does not exist or is a directory.
-        * Crashes if duplicate keys exist across files (if forbid_duplicates=True).
-        * Later files override earlier ones (unless forbid_duplicates).
+        * Later files override earlier ones.
         """
         if not isinstance(config_files, list):
             raise TypeError("Expected 'files' to be a list of paths (str | Path).")
@@ -398,20 +394,12 @@ class CredentialFinder:
                 "Expected file paths, but these are directories:\n  - " + "\n  - ".join(dirs)
             )
 
-        settings_dict = {}
-        seen_keys = {}
+        settings = Dynaconf(envvar_prefix=False)  # no OS env overrides
         for f in resolved:
-            env_dict = dotenv_values(f)
-            for key, value in env_dict.items():
-                if forbid_duplicates and key in seen_keys:
-                    raise RuntimeError(
-                        f"Duplicate configuration variable '{key}' found in {f} "
-                        f"(previously found in {seen_keys[key]})"
-                    )
-                settings_dict[key] = value
-                seen_keys[key] = f
-
-        return settings_dict
+            values = dotenv_values(f)  # OrderedDict
+            settings.update(values, merge=True)
+        
+        return settings
 
 # ---- Example usage ----
 # from config_factory import ConfigFactory

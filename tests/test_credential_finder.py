@@ -195,8 +195,13 @@ class TestCredentialFinder(unittest.TestCase):
 class TestCredentialFinderIntegration(unittest.TestCase):
     """Integration tests for CredentialFinder."""
     
-    def test_complete_workflow_with_env_file(self):
+    @patch('npd_plainerflow.credential_finder.create_engine')
+    def test_complete_workflow_with_env_file(self, mock_create_engine):
         """Test complete workflow with a properly configured .env file."""
+        # Mock the create_engine to avoid actual DB connection
+        mock_engine = MagicMock()
+        mock_create_engine.return_value = mock_engine
+
         # Create a temporary .env file with complete credentials
         with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
             f.write("GX_USERNAME=testuser\n")
@@ -207,23 +212,91 @@ class TestCredentialFinderIntegration(unittest.TestCase):
             env_file_path = f.name
         
         try:
-            # This should try to connect to MySQL and likely fail, but we'll catch any exception
-            # The important thing is that it should not raise a RuntimeError about incomplete credentials
-            try:
-                engine = CredentialFinder.detect_config(env_path=env_file_path, verbose=False)
-                # If we get here, it means the connection attempt succeeded or fell back to SQLite
-                # Either way, it means the credentials were complete
-                self.assertIsInstance(engine, sqlalchemy.engine.Engine)
-            except RuntimeError as e:
-                # If we get a RuntimeError, it should NOT be about incomplete credentials
-                self.assertNotIn("Incomplete .env credentials", str(e))
-                # Re-raise if it's a different RuntimeError
-                if "Incomplete .env credentials" not in str(e):
-                    raise
+            # This should now call the mocked create_engine
+            engine = CredentialFinder.detect_config(env_path=env_file_path, verbose=False)
             
+            # Check that create_engine was called with the correct URL
+            mock_create_engine.assert_called_once()
+            self.assertEqual(engine, mock_engine)
+
         finally:
             # Clean up
             os.unlink(env_file_path)
+
+
+
+
+class TestLoadConfigFromEnv(unittest.TestCase):
+    """Test cases for the load_config_from_env static method."""
+
+    def setUp(self):
+        """Set up temporary .env files for testing."""
+        self.temp_dir = tempfile.mkdtemp()
+        self.env_file1_path = os.path.join(self.temp_dir, "test1.env")
+        self.env_file2_path = os.path.join(self.temp_dir, "test2.env")
+
+        with open(self.env_file1_path, "w") as f:
+            f.write("DB_HOST=localhost\n")
+            f.write("DB_PORT=5432\n")
+            f.write("COMMON_VAR=file1\n")
+            f.write("DB_USER=test\n")
+
+        with open(self.env_file2_path, "w") as f:
+            f.write("DB_USER=admin\n")
+            f.write("COMMON_VAR=file2\n")
+            f.write("DB_HOST=remotehost\n")
+
+    def tearDown(self):
+        """Clean up temporary files and directory."""
+        import shutil
+        shutil.rmtree(self.temp_dir)
+
+    def test_load_single_file(self):
+        """Test loading a single, valid .env file."""
+        settings = CredentialFinder.load_config_from_env([self.env_file1_path])
+        self.assertEqual(settings['DB_HOST'], "localhost")
+        self.assertEqual(settings['DB_PORT'], "5432")
+
+    def test_load_multiple_files_override(self):
+        """Test that later files override earlier ones when duplicates are allowed."""
+        settings = CredentialFinder.load_config_from_env(
+            [self.env_file1_path, self.env_file2_path], forbid_duplicates=False
+        )
+        self.assertEqual(settings['DB_HOST'], "remotehost")
+        self.assertEqual(settings['DB_USER'], "admin")
+        self.assertEqual(settings['COMMON_VAR'], "file2")
+
+    def test_forbid_duplicates_raises_error(self):
+        """Test that a RuntimeError is raised when forbid_duplicates=True and keys conflict."""
+        with self.assertRaises(RuntimeError) as context:
+            CredentialFinder.load_config_from_env(
+                [self.env_file1_path, self.env_file2_path], forbid_duplicates=True
+            )
+        self.assertIn("Duplicate configuration variable", str(context.exception))
+        self.assertIn("'DB_USER'", str(context.exception))
+
+    def test_missing_file_raises_error(self):
+        """Test that a RuntimeError is raised if a configuration file is missing."""
+        with self.assertRaises(RuntimeError) as context:
+            CredentialFinder.load_config_from_env(["/non/existent/file.env"])
+        self.assertIn("Missing configuration file(s)", str(context.exception))
+
+    def test_directory_as_file_raises_error(self):
+        """Test that a RuntimeError is raised if a path is a directory."""
+        with self.assertRaises(RuntimeError) as context:
+            CredentialFinder.load_config_from_env([self.temp_dir])
+        self.assertIn("Expected file paths, but these are directories", str(context.exception))
+
+    def test_empty_file_list_raises_error(self):
+        """Test that a RuntimeError is raised if the file list is empty."""
+        with self.assertRaises(RuntimeError) as context:
+            CredentialFinder.load_config_from_env([])
+        self.assertIn("No files provided", str(context.exception))
+
+    def test_non_list_input_raises_error(self):
+        """Test that a TypeError is raised if the input is not a list."""
+        with self.assertRaises(TypeError):
+            CredentialFinder.load_config_from_env("not_a_list")
 
 
 if __name__ == '__main__':

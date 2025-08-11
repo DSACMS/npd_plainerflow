@@ -9,10 +9,11 @@ something to run against.
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional,  List, Union
 import sqlalchemy
 from sqlalchemy import create_engine
-
+from dynaconf import Dynaconf
+from dotenv import dotenv_values
 
 class CredentialFinder:
     """
@@ -364,3 +365,54 @@ class CredentialFinder:
                 print(f"[CredentialFinder] Using SQLite database: {db_path}")
         
         return create_engine(sql_url)
+    
+    #TODO I have added this new function load_env which should allow any two .env files to be loaded, merged and returned as a settings monad. 
+    # We need to write a test to make sure that it works, and that forbid_duplicates works as expected. 
+
+    @staticmethod
+    def load_config_from_env(config_files: List[Union[str, Path]], *, forbid_duplicates: bool = True) -> dict:
+        """
+        Create a dictionary from an explicit, ordered list of config files.
+        * Only accepts a list.
+        * Crashes with a clear error if any file does not exist or is a directory.
+        * Crashes if duplicate keys exist across files (if forbid_duplicates=True).
+        * Later files override earlier ones (unless forbid_duplicates).
+        """
+        if not isinstance(config_files, list):
+            raise TypeError("Expected 'files' to be a list of paths (str | Path).")
+
+        if not config_files:
+            raise RuntimeError("No files provided. Provide a non-empty list of config files.")
+
+        resolved = [Path(p).expanduser().resolve() for p in config_files]
+
+        missing = [str(p) for p in resolved if not p.exists()]
+        if missing:
+            raise RuntimeError(
+                "Missing configuration file(s):\n  - " + "\n  - ".join(missing)
+            )
+
+        dirs = [str(p) for p in resolved if p.is_dir()]
+        if dirs:
+            raise RuntimeError(
+                "Expected file paths, but these are directories:\n  - " + "\n  - ".join(dirs)
+            )
+
+        settings_dict = {}
+        seen_keys = {}
+        for f in resolved:
+            env_dict = dotenv_values(f)
+            for key, value in env_dict.items():
+                if forbid_duplicates and key in seen_keys:
+                    raise RuntimeError(
+                        f"Duplicate configuration variable '{key}' found in {f} "
+                        f"(previously found in {seen_keys[key]})"
+                    )
+                settings_dict[key] = value
+                seen_keys[key] = f
+
+        return settings_dict
+
+# ---- Example usage ----
+# from config_factory import ConfigFactory
+# settings = ConfigFactory.from_files(["../.env", "../data.env"], forbid_duplicates=True)

@@ -33,6 +33,9 @@ from .inlaw import InLaw
 from .dbtable import DBTable, DBTableError, DBTableValidationError, DBTableHierarchyError
 from .sqloopcicle import SQLoopcicle
 from .frostdict import FrostDict, FrozenKeyError
+from .confignoir import ConfigNoir
+from .enginefetcher import EngineFetcher
+
 
 # As we add more classes later, they should be imported here
 # Example:
@@ -49,5 +52,7 @@ __all__ = [
     "DBTableHierarchyError",
     "SQLoopcicle",
     "FrostDict",
-    "FrozenKeyError"
+    "FrozenKeyError",
+    "ConfigNoir",
+    "EngineFetcher"
 ]

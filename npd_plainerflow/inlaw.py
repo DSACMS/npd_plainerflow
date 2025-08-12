@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 from typing import Union, List, Dict, Any, Optional
 import sqlalchemy
 import pandas as pd
+from dynaconf import Dynaconf
 
 try:
     import great_expectations as gx
@@ -63,12 +64,13 @@ class InLaw(ABC):
     
     @staticmethod
     @abstractmethod
-    def run(engine) -> Union[bool, str]:
+    def run(engine, settings: Dynaconf | None = None) -> Union[bool, str]:
         """
         Run the validation test.
         
         Args:
             engine: SQLAlchemy engine for database connection
+            settings: A synaconf object for passing in database and tables and whatnot... 
             
         Returns:
             True if test passes
@@ -185,7 +187,7 @@ class InLaw(ABC):
             print(f"Warning: Failed to import from directory {directory_path}: {e}")
 
     @staticmethod
-    def run_all(*, engine, inlaw_files: Optional[List[str]] = None, inlaw_dir: Optional[str] = None) -> Dict[str, Any]:
+    def run_all(*, engine, inlaw_files: Optional[List[str]] = None, inlaw_dir: Optional[str] = None, settings: Dynaconf | None = None) -> Dict[str, Any]:
         """
         Discover and run all InLaw subclasses.
         
@@ -232,7 +234,7 @@ class InLaw(ABC):
                         message=r".*result_format.*configured at the Validator-level will not be persisted.*",
                         category=UserWarning
                     )
-                    result = test_class.run(engine)
+                    result = test_class.run(engine,settings=settings)
                 
                 if result is True:
                     print(InLaw.ansi_green("✅ PASS"))
@@ -291,7 +293,7 @@ class InLawExampleTest(InLaw):
     title = "Example test that always passes"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings: Dynaconf | None = None):
         """Example test that demonstrates the pattern."""
         # Simple test that always passes
         sql = "SELECT 1 as test_value"

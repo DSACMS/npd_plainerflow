@@ -174,6 +174,7 @@ class InLaw(ABC):
             directory_path: Path to the directory containing Python files
         """
         try:
+            print(f"InLaw instructed to scan for InLaw classes in: {os.path.abspath(directory_path)}")
             if not os.path.isdir(directory_path):
                 print(f"Warning: Directory {directory_path} does not exist")
                 return
@@ -284,35 +285,3 @@ class InLaw(ABC):
         Use run_all with named parameters instead.
         """
         return InLaw.run_all(engine=engine, inlaw_files=inlaw_files, inlaw_dir=inlaw_dir)
-
-
-# Example child class for demonstration
-class InLawExampleTest(InLaw):
-    """Example InLaw test class - can be removed in production."""
-    
-    title = "Example test that always passes"
-    
-    @staticmethod
-    def run(engine, settings: Dynaconf | None = None):
-        """Example test that demonstrates the pattern."""
-        # Simple test that always passes
-        sql = "SELECT 1 as test_value"
-        gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
-        
-        # Suppress only the specific result_format warning during expectation calls
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message=r".*result_format.*configured at the Validator-level will not be persisted.*",
-                category=UserWarning
-            )
-            
-            result = gx_df.expect_column_values_to_be_between(
-                column="test_value", 
-                min_value=0, 
-                max_value=2
-            )
-        
-        if result.success:
-            return True
-        return f"Test value was not between 0 and 2"

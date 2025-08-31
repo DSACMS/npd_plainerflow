@@ -247,7 +247,8 @@ class SQLoopcicle:
                                 print(f"-- {stop_icon} SQL loop terminated due to error")
                                 raise e
             except Exception as e:
-                SQLoopcicle._beep(5)
+                if(is_do_beep):
+                    SQLoopcicle._beep(5)
                 print(f"-- {error_icon} Database connection or general error:\n-- Error---\n-- \n-- {e}\n-- ---")
                 print(f"-- {stop_icon} SQL loop terminated due to error")
                 raise e
@@ -263,7 +264,7 @@ class SQLoopcicle:
                 print(f"{sql_string}\n")
         
         # Print end message
-        print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====\a\a")
+        print(f"-- {end_icon} ===== SQL LOOP COMPLETE =====")
         if is_just_print:
             print(f"-- {warning_icon} ===== I AM NOT RUNNING SQL =====")
         else:

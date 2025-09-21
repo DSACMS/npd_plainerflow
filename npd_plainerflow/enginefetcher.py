@@ -80,8 +80,8 @@ class EngineFetcher:
                 raise ValueError("Missing required DB_DATABASE path for SQLite connection")
 
         try:
-            username = str(settings.GX_USERNAME)
-            password = str(settings.GX_PASSWORD)
+            username = str(settings.DB_USER)
+            password = str(settings.DB_PASSWORD)
             host = str(settings.DB_HOST)
             port = str(settings.DB_PORT)
             database = str(settings.DB_DATABASE)

@@ -273,7 +273,7 @@ class CredentialFinder:
         load_dotenv(env_path)
         
         # Check for required credentials
-        required_vars = ['GX_USERNAME', 'GX_PASSWORD', 'DB_DATABASE', 'DB_PORT', 'DB_HOST']
+        required_vars = ['DB_USER', 'DB_PASSWORD', 'DB_DATABASE', 'DB_PORT', 'DB_HOST']
         missing_vars = []
         
         for var in required_vars:
@@ -286,8 +286,8 @@ class CredentialFinder:
             )
         
         # Build connection string
-        username = os.getenv('GX_USERNAME')
-        password = os.getenv('GX_PASSWORD')
+        username = os.getenv('DB_USER')
+        password = os.getenv('DB_PASSWORD')
         database = os.getenv('DB_DATABASE')
         port = os.getenv('DB_PORT')
         host = os.getenv('DB_HOST')

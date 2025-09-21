@@ -147,8 +147,8 @@ class ConfigNoir:
                 headers = rows[0]
                 if len(rows) > 1 and all(h in headers for h in ['username', 'password', 'server', 'port', 'database']):
                     first_row_data = dict(zip(headers, rows[1]))
-                    config_data['GX_USERNAME'] = first_row_data.get('username')
-                    config_data['GX_PASSWORD'] = first_row_data.get('password')
+                    config_data['DB_USER'] = first_row_data.get('username')
+                    config_data['DB_PASSWORD'] = first_row_data.get('password')
                     config_data['DB_HOST'] = first_row_data.get('server')
                     config_data['DB_PORT'] = first_row_data.get('port')
                     config_data['DB_DATABASE'] = first_row_data.get('database')
@@ -184,8 +184,8 @@ class ConfigNoir:
             url = make_url(connection_url)
             return {
                 "DB_TYPE": "POSTGRESQL",
-                "GX_USERNAME": url.username,
-                "GX_PASSWORD": url.password,
+                "DB_USER": url.username,
+                "DB_PASSWORD": url.password,
                 "DB_HOST": url.host,
                 "DB_PORT": url.port,
                 "DB_DATABASE": url.database

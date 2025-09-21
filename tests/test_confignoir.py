@@ -74,8 +74,8 @@ class TestConfigNoir(unittest.TestCase):
             f.write("DB_TYPE=POSTGRESQL\n")
             f.write("DB_HOST=nonexistent.host\n")
             f.write("DB_PORT=5432\n")
-            f.write("GX_USERNAME=user\n")
-            f.write("GX_PASSWORD=pass\n")
+            f.write("DB_USER=user\n")
+            f.write("DB_PASSWORD=pass\n")
             f.write("DB_DATABASE=db\n")
 
         with self.assertRaises(RuntimeError):

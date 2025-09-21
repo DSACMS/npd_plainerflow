@@ -100,14 +100,14 @@ class TestCredentialFinder(unittest.TestCase):
         # Create a temporary .env file with incomplete credentials
         env_file = os.path.join(self.temp_dir, ".env")
         with open(env_file, "w") as f:
-            f.write("GX_USERNAME=testuser\n")
+            f.write("DB_USER=testuser\n")
             f.write("# Missing other required variables\n")
         
         with self.assertRaises(RuntimeError) as context:
             CredentialFinder.detect_config(env_path=env_file, verbose=False)
         
         self.assertIn("Incomplete .env credentials", str(context.exception))
-        self.assertIn("GX_PASSWORD", str(context.exception))
+        self.assertIn("DB_PASSWORD", str(context.exception))
     
     def test_spark_not_available(self):
         """Test behavior when pyspark is not available."""
@@ -204,8 +204,8 @@ class TestCredentialFinderIntegration(unittest.TestCase):
 
         # Create a temporary .env file with complete credentials
         with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False) as f:
-            f.write("GX_USERNAME=testuser\n")
-            f.write("GX_PASSWORD=testpass\n")
+            f.write("DB_USER=testuser\n")
+            f.write("DB_PASSWORD=testpass\n")
             f.write("DB_DATABASE=testdb\n")
             f.write("DB_PORT=3306\n")
             f.write("DB_HOST=localhost\n")

@@ -153,8 +153,8 @@ settings = ConfigNoir.detect_and_load_config(
 ```bash
 # Database Connection
 DB_TYPE=MYSQL
-GX_USERNAME=myuser
-GX_PASSWORD=mypassword
+DB_USER=myuser
+DB_PASSWORD=mypassword
 DB_HOST=localhost
 DB_PORT=3306
 DB_DATABASE=mydatabase

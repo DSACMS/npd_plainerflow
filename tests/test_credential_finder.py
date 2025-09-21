@@ -289,7 +289,7 @@ class TestLoadConfigFromEnv(unittest.TestCase):
     def test_non_list_input_raises_error(self):
         """Test that a TypeError is raised if the input is not a list."""
         with self.assertRaises(TypeError):
-            CredentialFinder.load_config_from_env("not_a_list")
+            CredentialFinder.load_config_from_env("not_a_list")  # type: ignore
 
 
 if __name__ == '__main__':

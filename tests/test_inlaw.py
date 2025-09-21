@@ -12,7 +12,7 @@ class TestInLawBasicPass(InLaw):
     title = "Basic passing test"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         import warnings
         sql = "SELECT 1 as test_value"
         test_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
@@ -33,7 +33,7 @@ class TestInLawBasicFail(InLaw):
     title = "Basic failing test"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         import warnings
         sql = "SELECT 1 as test_value"
         test_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
@@ -54,7 +54,7 @@ class TestInLawWithError(InLaw):
     title = "Test with error"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         # This will cause an error due to invalid SQL
         sql = "SELECT FROM invalid_syntax"
         error_gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
@@ -127,7 +127,7 @@ def test_inlaw_invalid_return_type():
         title = "Test with invalid return"
         
         @staticmethod
-        def run(engine):
+        def run(engine, settings=None):
             return 42  # Invalid return type (should be bool or str)
     
     engine = sqlalchemy.create_engine("sqlite:///:memory:")

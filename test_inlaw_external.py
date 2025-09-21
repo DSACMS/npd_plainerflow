@@ -11,7 +11,7 @@ class ExternalInLawTest(InLaw):
     title = "External test that always passes"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         """External test that demonstrates dynamic loading."""
         sql = "SELECT 42 as answer"
         gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)
@@ -32,7 +32,7 @@ class AnotherExternalTest(InLaw):
     title = "Another external test"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         """Another external test."""
         sql = "SELECT 'hello' as greeting"
         gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)

@@ -11,7 +11,7 @@ class DirectoryTest1(InLaw):
     title = "Directory test 1"
     
     @staticmethod
-    def run(engine):
+    def run(engine, settings=None):
         """Test from directory file 1."""
         sql = "SELECT 100 as hundred"
         gx_df = InLaw.sql_to_gx_df(sql=sql, engine=engine)

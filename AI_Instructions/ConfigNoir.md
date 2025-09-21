@@ -4,18 +4,50 @@
 
 ---
 
+## Typical Usage Example
+
+```python
+from npd_plainerflow import ConfigNoir
+import os
+
+# Define paths to your configuration files
+base_path = os.path.dirname(os.path.abspath(__file__))
+env_location = os.path.abspath(os.path.join(base_path, "..", "..", ".env"))
+data_settings_location = os.path.abspath(os.path.join(base_path, "..", "..", "data_file_locations.env"))
+
+# Load settings from all specified files
+settings = ConfigNoir.detect_and_load_config(
+    config_files=[env_location, data_settings_location], 
+    verbose=True
+)
+
+# Get the database engine
+if settings._sql_alchemy_engine:
+    alchemy_engine = settings._sql_alchemy_engine
+    print("Connected successfully!")
+else:
+    raise RuntimeError(f"Failed to connect to the database: {settings.database_connection_error_message}")
+
+# Access other configuration values
+nppes_raw_schema = settings.NPPES_RAW_SCHEMA
+```
+
 ## Detection Priority Order
 
 ConfigNoir uses a sophisticated priority system that differs based on usage mode:
 
 ### Mode 1: Explicit Configuration Files
+
 When `config_files` parameter is provided:
+
 1. **Load specified files** in order (later files override earlier ones)
 2. **Create engine** using merged configuration
 3. **No fallback** - failure to load results in error
 
 ### Mode 2: Auto-Detection  
+
 When no `config_files` specified:
+
 1. **SQLite Override** - If `sqlite_db_file` parameter provided
 2. **Spark Session** - Active Databricks/PySpark environment  
 3. **Google Colab** - Google Colab environment with Drive access
@@ -28,6 +60,7 @@ When no `config_files` specified:
 ## Configuration Sources & Detection Logic
 
 ### Source: Explicit Configuration Files
+
 ```python
 settings = ConfigNoir.detect_and_load_config(
     config_files=[
@@ -43,6 +76,7 @@ settings = ConfigNoir.detect_and_load_config(
 **Merging**: Sequential loading with override (last file wins)
 
 ### Source: SQLite Override
+
 ```python
 settings = ConfigNoir.detect_and_load_config(
     sqlite_db_file="~/my_project.db",
@@ -55,12 +89,15 @@ settings = ConfigNoir.detect_and_load_config(
 **Path**: Supports `~` expansion and automatic directory creation
 
 ### Source: Spark Session (Databricks)
-**Detection**: 
+
+**Detection**:
+
 - Successful `import pyspark`
 - Active SparkSession via `SparkSession.getActiveSession()`
 - Available `spark.databricks.jdbc.url` configuration
 
 **Configuration Generated**:
+
 ```python
 {
     "DB_TYPE": "DATABRICKS",
@@ -69,7 +106,9 @@ settings = ConfigNoir.detect_and_load_config(
 ```
 
 ### Source: Google Colab  
+
 **Detection**:
+
 - Successful `import google.colab`
 - Available gspread and google-auth libraries
 - Accessible Google Drive spreadsheet
@@ -79,16 +118,20 @@ settings = ConfigNoir.detect_and_load_config(
 **Configuration**: Reads from specified worksheet with structured data
 
 **Expected Sheet Format**:
+
 | username | password | server | port | database |
 |----------|----------|--------|------|----------|
 | myuser   | mypass   | db.example.com | 3306 | mydb |
 
 ### Source: Default .env File
+
 **Detection**: `.env` file exists in current directory  
 **Format**: Standard environment variable format (see Configuration File Formats section)
 
 ### Source: testcontainers PostgreSQL
-**Detection**: 
+
+**Detection**:
+
 - Available `testcontainers` library
 - Automatic container startup
 
@@ -96,6 +139,7 @@ settings = ConfigNoir.detect_and_load_config(
 **Configuration**: Automatically generated from container connection
 
 ### Source: SQLite Fallback
+
 **Detection**: All other methods fail  
 **Path**: `~/plainerflow_fallback.db`  
 **Behavior**: Never fails (unless disk issues)
@@ -105,6 +149,7 @@ settings = ConfigNoir.detect_and_load_config(
 ## Configuration File Formats
 
 ### Standard .env Format
+
 ```bash
 # Database Connection
 DB_TYPE=MYSQL
@@ -114,69 +159,31 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_DATABASE=mydatabase
 
-# Application Settings
-NPPES_RAW_SCHEMA=nppes_raw
-NPPES_DATA_LOCATION=/path/to/data
-LOG_LEVEL=DEBUG
 ```
 
 ### Supported Database Types
+
 - **MYSQL**: MySQL/MariaDB connections
 - **POSTGRESQL**: PostgreSQL connections  
 - **SQLITE**: SQLite file databases
 - **DATABRICKS**: Databricks platform (via Spark)
-
-### Variable Naming Convention
-ConfigNoir uses the same variable naming convention as the legacy CredentialFinder:
-
-- `GX_USERNAME` - Database username
-- `GX_PASSWORD` - Database password  
-- `DB_HOST` - Database server hostname
-- `DB_PORT` - Database server port
-- `DB_DATABASE` - Database name
-- `DB_TYPE` - Database type (MYSQL, POSTGRESQL, SQLITE, DATABRICKS)
 
 ---
 
 ## Error Handling
 
 ### Connection Errors
+
 When database connection fails, ConfigNoir sets:
+
 - `settings._sql_alchemy_engine = None`
 - `settings.database_connection_error_message` contains error details
 
 ### File Loading Errors
+
 - **FileNotFoundError**: When specified config files don't exist
 - **IsADirectoryError**: When config_files contains directory paths
 - **TypeError**: When config_files is not a list
-
-### Dependency Errors
-- Missing optional dependencies (pyspark, testcontainers, etc.) are handled gracefully
-- Falls back to next available configuration source
-- Only raises errors when no fallback options exist
-
-### Example Error Handling
-```python
-from npd_plainerflow import ConfigNoir
-
-try:
-    settings = ConfigNoir.detect_and_load_config(
-        config_files=["/path/to/config.env"],
-        verbose=True
-    )
-    
-    if settings._sql_alchemy_engine:
-        engine = settings._sql_alchemy_engine
-        # Continue with database operations
-    else:
-        print(f"Database connection failed: {settings.database_connection_error_message}")
-        # Handle connection failure
-        
-except FileNotFoundError as e:
-    print(f"Configuration file not found: {e}")
-except Exception as e:
-    print(f"Configuration loading failed: {e}")
-```
 
 ---
 
@@ -189,6 +196,7 @@ ConfigNoir delegates actual database engine creation to `EngineFetcher`:
 3. **Engine attached** to returned Dynaconf object at `._sql_alchemy_engine`
 
 This separation allows:
+
 - **Modular design**: Configuration detection separate from engine creation
 - **Reusable components**: EngineFetcher can be used independently  
 - **Easier testing**: Mock either component independently
@@ -199,6 +207,7 @@ This separation allows:
 ## Best Practices
 
 ### 1. Use Multiple Configuration Files
+
 ```python
 # Separate database credentials from application settings
 settings = ConfigNoir.detect_and_load_config(
@@ -212,6 +221,7 @@ settings = ConfigNoir.detect_and_load_config(
 ```
 
 ### 2. Always Check Engine Connection
+
 ```python
 settings = ConfigNoir.detect_and_load_config(verbose=True)
 if not settings._sql_alchemy_engine:
@@ -219,12 +229,14 @@ if not settings._sql_alchemy_engine:
 ```
 
 ### 3. Use Verbose Mode During Development
+
 ```python
 # Enable verbose logging to understand which configuration source is used
 settings = ConfigNoir.detect_and_load_config(verbose=True)
 ```
 
 ### 4. Environment-Specific Configuration
+
 ```python
 # Different configurations for different environments
 import os
@@ -250,6 +262,7 @@ if 'config_files' in locals():
 ## Advanced Features
 
 ### Dynamic Configuration Loading
+
 ```python
 # Load different configurations based on runtime conditions
 import os
@@ -275,6 +288,7 @@ settings = get_config_for_environment()
 ```
 
 ### Custom SQLite Paths
+
 ```python
 # Use project-specific SQLite database
 import os
@@ -297,6 +311,7 @@ settings = ConfigNoir.detect_and_load_config(
 
 **Issue**: `TypeError: Expected 'config_files' to be a list of paths`  
 **Solution**: Ensure config_files parameter is a list, not a single string
+
 ```python
 # Wrong
 settings = ConfigNoir.detect_and_load_config(config_files=".env")
@@ -307,6 +322,7 @@ settings = ConfigNoir.detect_and_load_config(config_files=[".env"])
 
 **Issue**: `FileNotFoundError: Missing configuration file(s)`  
 **Solution**: Verify file paths exist and are accessible
+
 ```python
 import os
 config_file = "my_config.env"
@@ -316,6 +332,7 @@ if not os.path.exists(config_file):
 
 **Issue**: `settings._sql_alchemy_engine is None`  
 **Solution**: Check the error message and verify configuration values
+
 ```python
 if not settings._sql_alchemy_engine:
     print(f"Connection failed: {settings.database_connection_error_message}")
@@ -324,6 +341,7 @@ if not settings._sql_alchemy_engine:
 
 **Issue**: Google Colab authentication fails  
 **Solution**: Ensure proper Google authentication and Drive permissions
+
 ```python
 # In Google Colab, run this first:
 from google.colab import auth
@@ -331,6 +349,7 @@ auth.authenticate_user()
 ```
 
 ### Debug Mode
+
 Always use `verbose=True` during development to understand which configuration source is being used:
 
 ```python
@@ -339,3 +358,4 @@ settings = ConfigNoir.detect_and_load_config(verbose=True)
 # [ConfigNoir] Using .env file credentials from /path/to/.env.
 # [ConfigNoir] Using Spark session credentials.
 # [ConfigNoir] Falling back to local SQLite database: /Users/username/plainerflow_fallback.db
+```

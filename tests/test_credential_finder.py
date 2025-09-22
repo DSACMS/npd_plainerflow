@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from npd_plainerflow import CredentialFinder
-import sqlalchemy
+import sqlalchemy # type: ignore
 
 
 class TestCredentialFinder(unittest.TestCase):
@@ -58,7 +58,7 @@ class TestCredentialFinder(unittest.TestCase):
         
         # Test that it actually works
         with engine.connect() as conn:
-            from sqlalchemy import text
+            from sqlalchemy import text # type: ignore
             result = conn.execute(text("SELECT 1"))
             row = result.fetchone()
             if row:
@@ -78,7 +78,7 @@ class TestCredentialFinder(unittest.TestCase):
         
         # Test that it works
         with engine.connect() as conn:
-            from sqlalchemy import text
+            from sqlalchemy import text # type: ignore
             result = conn.execute(text("SELECT 'fallback' as test"))
             row = result.fetchone()
             if row:
@@ -254,7 +254,7 @@ class TestLoadConfigFromEnv(unittest.TestCase):
     def test_load_single_file(self):
         """Test loading a single, valid .env file."""
         settings = CredentialFinder.load_config_from_env([self.env_file1_path])
-        from dynaconf import Dynaconf
+        from dynaconf import Dynaconf # type: ignore
         self.assertIsInstance(settings, Dynaconf)
         self.assertEqual(settings.DB_HOST, "localhost")
         self.assertEqual(settings.DB_PORT, "5432")

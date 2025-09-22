@@ -141,7 +141,7 @@ def test_inlaw_abstract_class():
     """Test that InLaw is properly abstract."""
     with pytest.raises(TypeError):
         # Should not be able to instantiate abstract class directly
-        InLaw()
+        InLaw() # type: ignore
 
 
 if __name__ == "__main__":

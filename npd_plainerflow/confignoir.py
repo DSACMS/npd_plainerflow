@@ -35,8 +35,9 @@ class ConfigNoir:
         1. SQLite override (if sqlite_db_file is provided)
         2. Spark session (Databricks / PySpark)
         3. Google Colab + Drive secrets sheet
-        4. Default .env file
-        5. Fallback to a test database (PostgreSQL container or SQLite file)
+        4. System environment variables (direct environment variable check)
+        5. Default .env file
+        6. Fallback to a test database (PostgreSQL container or SQLite file)
         """
         settings = Dynaconf(envvar_prefix=False)
         settings._sql_alchemy_engine = None
@@ -66,6 +67,8 @@ class ConfigNoir:
                 config_source = ConfigNoir._try_spark_config(verbose)
             if not config_source:
                 config_source = ConfigNoir._try_colab_config(password_worksheet, verbose)
+            if not config_source:
+                config_source = ConfigNoir._try_environment_variables(verbose)
             if not config_source:
                 config_source = ConfigNoir._try_env_config(".env", verbose)
             if not config_source:
@@ -157,6 +160,47 @@ class ConfigNoir:
             return config_data
         except (ImportError, Exception):
             return None
+
+    @staticmethod
+    def _try_environment_variables(verbose: bool) -> Optional[Dict[str, Any]]:
+        """Attempts to get config from system environment variables."""
+        # Standard database environment variables to check
+        env_vars = ['DB_TYPE', 'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_PORT', 'DB_DATABASE']
+        
+        # Check if any of the key database variables are set
+        found_vars = {}
+        for var in env_vars:
+            value = os.environ.get(var)
+            if value:
+                found_vars[var] = value
+        
+        # For minimal configuration, we need at least DB_TYPE
+        # For non-SQLite databases, we typically need more variables
+        if not found_vars.get('DB_TYPE'):
+            return None
+            
+        db_type = found_vars['DB_TYPE'].upper()
+        
+        # SQLite only needs DB_TYPE and DB_DATABASE
+        if db_type == 'SQLITE':
+            if 'DB_DATABASE' in found_vars:
+                if verbose:
+                    print("[ConfigNoir] Using system environment variables for SQLite configuration.")
+                return found_vars
+            return None
+            
+        # For other database types, we need more variables
+        required_vars = ['DB_HOST', 'DB_USER', 'DB_DATABASE']
+        
+        # Check if we have the minimum required variables
+        missing_vars = [var for var in required_vars if var not in found_vars]
+        if missing_vars:
+            return None
+            
+        if verbose:
+            print(f"[ConfigNoir] Using system environment variables for {db_type} configuration.")
+        
+        return found_vars
 
     @staticmethod
     def _try_env_config(env_path: str, verbose: bool) -> Optional[Dict[str, Any]]:

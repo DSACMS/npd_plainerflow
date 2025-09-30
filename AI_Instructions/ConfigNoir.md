@@ -51,9 +51,10 @@ When no `config_files` specified:
 1. **SQLite Override** - If `sqlite_db_file` parameter provided
 2. **Spark Session** - Active Databricks/PySpark environment  
 3. **Google Colab** - Google Colab environment with Drive access
-4. **Default .env** - `.env` file in current directory
-5. **testcontainers PostgreSQL** - Automatic test database container
-6. **SQLite Fallback** - `~/plainerflow_fallback.db`
+4. **System Environment Variables** - Direct environment variable check
+5. **Default .env** - `.env` file in current directory
+6. **testcontainers PostgreSQL** - Automatic test database container
+7. **SQLite Fallback** - `~/plainerflow_fallback.db`
 
 ---
 
@@ -122,6 +123,43 @@ settings = ConfigNoir.detect_and_load_config(
 | username | password | server | port | database |
 |----------|----------|--------|------|----------|
 | myuser   | mypass   | db.example.com | 3306 | mydb |
+
+### Source: System Environment Variables
+
+**Detection**: Standard database environment variables are set in the system environment
+
+**Required Variables**:
+- **DB_TYPE** - Database type (MYSQL, POSTGRESQL, SQLITE, etc.)
+- For **non-SQLite** databases: `DB_HOST`, `DB_USER`, `DB_DATABASE` are also required
+- For **SQLite**: Only `DB_TYPE` and `DB_DATABASE` are required
+
+**Optional Variables**:
+- **DB_PASSWORD** - Database password
+- **DB_PORT** - Database port number
+
+**Usage Examples**:
+
+```bash
+# SQLite configuration
+export DB_TYPE=SQLITE
+export DB_DATABASE=~/my_project.db
+
+# PostgreSQL configuration
+export DB_TYPE=POSTGRESQL
+export DB_HOST=localhost
+export DB_USER=myuser
+export DB_PASSWORD=mypass
+export DB_PORT=5432
+export DB_DATABASE=mydatabase
+```
+
+**Advantages**:
+- **Security**: No sensitive credentials stored in files
+- **Container-friendly**: Ideal for Docker/Kubernetes deployments
+- **CI/CD Integration**: Perfect for automated deployment pipelines
+- **Environment-specific**: Easy to switch between dev/staging/production
+
+**Priority**: Environment variables take precedence over `.env` files, making them ideal for production deployments while maintaining `.env` files for local development.
 
 ### Source: Default .env File
 

@@ -2,6 +2,38 @@
 
 A Python package for plain flow operations with SQLAlchemy integration.
 
+## Approach and Purpose
+
+Plainerflow is an attempt at a "lightest weight" ETL pipeline infrastructure. It is intended to be portable and runnable when: 
+
+* It is not possible to have a web-based tool as a data coordination tool (rules out Airflow et al.)
+* It must run in a Python notebook, (Databricks, Snowflake, Google Colab, and just plain Jupyter)
+* It must run in a CLI-only environment
+* The resulting SQL must be run in SAS using ProcSQL or FedSQL, or some other data processing language that supports SQL, but not a python abstraction layer.
+
+To solve the "must run everywhere" and "not sure where it needs to run next", and "this code must run for decades" problems, the code embraces the [Lindy Effect](https://en.wikipedia.org/wiki/Lindy_effect) by taking a simple approach to maintaining SQL abstractions. 
+It uses python f-strings as a templating approach (similar to [dbt](https://www.getdbt.com/) in this regard) and then uses an abstraction tool ([DBTable](/docs/DBTable_README.md)) to ensure that the database hieriarchy of the environment can be properly respected. 
+It stores its SQL statements in a python frozen dictionary (because accidentally writing over a key in the dictionary is a common mistake)
+Then it loops over that dictionary, either running or sometimes just printing, the resulting SQL, which it has compiled from the templates. 
+
+There are a huge number of really good data pipeline management features not found in plainerflow, because they would not work well, once you are cutting-and-pasting printed SQL into a SAS console (for instance). 
+But it does make it easier to maintain SQL pipelines, when you do not know for certain how your data environment will move around. 
+
+The goal is to make future-proof data pipelines that will survive for decades because the design of the pipeline only makes a single assumption: SQL will work to trainform data in the long term. 
+
+It also leverages the [Great Expectation expectation library](https://greatexpectations.io/expectations/), without the overhead of the higher-level components of the full Great Expectations approach.
+Because it is not a good assumption that you can use the higher-level web management infrastructure that come with Great Expectations. 
+
+As with our other projects, plainerflow is designed to allow data pipelines to be understood, created and maintained by AI-tools. 
+Which means that the Data Expectation approach is modular using the concept of an ["InLaw" class](/docs/InLaw_README.md), which is a class that hides everything except for the data expectation test contents itself in parent classes. 
+
+There is an expectation that "middle steps" of ETLs will need to encorporate code in other data transformation approaches.
+So the organization of projects using plainerflow is a series of "Step" python files with one stage of the data transformation. 
+
+So that middle "Steps" can be files with different python contents, or they could be SAS macro+data step programs, or they could be Stata, or R or whatever. 
+Using plainerflow is very useful when the majority of the ETL can be modeled using SQL and the other parts require other kinds of data thinking. 
+
+
 ## Installation
 
 ### From PyPI (recommended)
